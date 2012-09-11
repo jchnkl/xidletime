@@ -20,7 +20,7 @@ long XSyncValueToLong ( XSyncValue *value ) {
 
 DBusConnection * dbusInit ( int * );
 
-int dbusSendSignal ( DBusConnection *, char * ); //, void * );
+int dbusSendSignal ( DBusConnection *, char * );
 
 int main ( int argc, char ** argv ) {
 
@@ -65,7 +65,6 @@ int main ( int argc, char ** argv ) {
                             ;
 
         XEvent xev;
-        // XSyncValue xsv;
         XSyncValue delta, timeout;
 
         XSyncAlarmAttributes xsaa;
@@ -76,12 +75,9 @@ int main ( int argc, char ** argv ) {
         xsaa.trigger.counter    = idlecounter->counter;
         xsaa.trigger.value_type = XSyncAbsolute;
         xsaa.trigger.test_type  = XSyncPositiveComparison;
-        // xsaa.trigger.test_type  = XSyncNegativeComparison;
         xsaa.trigger.wait_value = timeout;
-        // xsaa.events             = True;
         xsaa.delta              = delta;
 
-        // XSyncAlarm xsa = XSyncCreateAlarm ( dpy, flags, &xsaa );
         XSyncAlarm setAlarm ( Bool reset, XSyncValue to ) {
             if ( reset ) {
                 xsaa.trigger.test_type  = XSyncPositiveComparison;
@@ -106,15 +102,11 @@ int main ( int argc, char ** argv ) {
 
         Time last;
         XSyncAlarm alarm = setAlarm ( True, timeout );
-        // setAlarm ( True, timeout );
         while ( 1 ) {
             XNextEvent ( dpy, &xev );
 
             if ( xev.type == ev_base + XSyncAlarmNotify ) {
                 XSyncAlarmNotifyEvent * xane = (XSyncAlarmNotifyEvent *) &xev;
-                // setAlarm ( False, xane->counter_value );
-
-                // XSyncDestroyAlarm ( dpy, alarm );
 
                 if ( last != xane->time ) {
                     fprintf ( stderr, "last!=xane->time\n" );
@@ -125,32 +117,17 @@ int main ( int argc, char ** argv ) {
                                                    );
 
                 if ( lessThan && last != xane->time ) {
-                // if ( lessThan && change) {
                     fprintf ( stderr, "XSyncValueLessThan TRUE\n" );
                     xsaa.trigger.test_type = XSyncPositiveComparison;
-                    // changeAlarm ( &alarm, True, timeout );
-                    // changeAlarm ( &(xane->alarm), True, timeout );
-                    // alarm = setAlarm ( True, timeout );
-                    // change = False;
-                    dbusSendSignal ( conn, "Reset" ); //, NULL );
+                    dbusSendSignal ( conn, "Reset" );
                 } else if ( last != xane->time ) {
                     fprintf ( stderr, "XSyncValueLessThan FALSE\n" );
                     xsaa.trigger.test_type = XSyncNegativeComparison;
-                    // changeAlarm ( &alarm, False, timeout );
-                    // changeAlarm ( &(xane->alarm), False, timeout );
-                    // alarm = setAlarm ( False, timeout );
-                    // change = True;
-                    // idletime = XSyncValueToLong ( &(xane->counter_value) );
-                    dbusSendSignal ( conn, "Idle" ); // , (void *)&idletime );
+                    dbusSendSignal ( conn, "Idle" );
                 }
 
                 XSyncChangeAlarm ( dpy, alarm, flags, &xsaa );
                 last = xane->time;
-
-                /*
-                XSyncQueryCounter ( dpy, idlecounter->counter, &xsv );
-                fprintf ( stderr, "idle: %lu\n", XSyncValueToLong ( &xsv ) );
-                */
 
                 fprintf ( stderr
                         , "alarm; time: %i, serial: %lu, counter_value: %lu, alarm_value: %lu\n"
@@ -226,8 +203,7 @@ DBusConnection * dbusInit ( int * error ) {
 
 }
 
-// int dbusSendSignal ( DBusConnection * conn, char * signalName, void * data ) {
-int dbusSendSignal ( DBusConnection * conn, char * signalName ) { //, void * data ) {
+int dbusSendSignal ( DBusConnection * conn, char * signalName ) {
 
     dbus_uint32_t serial = 0; // unique number to associate replies with requests
     DBusMessage* msg;
