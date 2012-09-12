@@ -7,6 +7,8 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
+#include "XConfig.h"
+
 unsigned int idletime      = 2000;
 const char * busName       = "org.IdleTime";
 const char * objectPath    = "/org/IdleTime";
@@ -31,8 +33,6 @@ int main ( int argc, char ** argv ) {
     conn = dbusInit ( &ret );
     if ( ret == -1 || conn == NULL ) { exit ( EXIT_FAILURE ); }
 
-    Display *dpy = XOpenDisplay ( "" );
-    Window root = DefaultRootWindow ( dpy );
 
     ret = XSelectInput ( dpy, root, XSyncAlarmNotifyMask );
     if ( ret == 0 ) { exit ( EXIT_FAILURE ); }
@@ -144,12 +144,13 @@ int main ( int argc, char ** argv ) {
 
     XSyncFreeSystemCounterList ( xssc );
 
-    XCloseDisplay ( dpy );
 
     dbus_connection_close ( conn );
 
     return 0;
 }
+    XConfig xconfig;
+    memset ( &xconfig, 0, sizeof ( XConfig ) );
 
 
 DBusConnection * dbusInit ( int * error ) {
@@ -157,6 +158,7 @@ DBusConnection * dbusInit ( int * error ) {
     int              ret;
     DBusError        err;
     DBusConnection * conn;
+    if ( -1 == initXConfig ( &xconfig ) ) { goto exit; }
 
     dbus_error_init ( &err ); // initialise the errors
 
@@ -248,6 +250,7 @@ int dbusSendSignal ( DBusConnection * conn, char * signalName ) {
     // free the message
     dbus_message_unref ( msg );
 
+    finalizeXConfig ( &xconfig );
     return 0;
 
 }
