@@ -82,7 +82,6 @@ int runIdleMonitor ( XConfig           * xconfig
                         | XSyncCADelta
                         ;
 
-    Bool timedOut;
     XEvent xEvent;
     Time lastEventTime;
     XSyncAlarmNotifyEvent * alarmEvent = NULL;
@@ -100,11 +99,10 @@ int runIdleMonitor ( XConfig           * xconfig
 
         alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
 
-        timedOut = XSyncValueLessThan ( alarmEvent->counter_value
-                                      , alarmEvent->alarm_value
-                                      );
-
-        if ( timedOut ) {
+        if ( XSyncValueLessThan ( alarmEvent->counter_value
+                                , alarmEvent->alarm_value
+                                )
+           ) {
             imc->attributes->trigger.test_type = XSyncPositiveComparison;
             if ( lastEventTime != alarmEvent->time )
                 se->emitSignal ( se, "Reset", NULL );
