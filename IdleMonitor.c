@@ -96,25 +96,25 @@ int runIdleMonitor ( XConfig           * xconfig
     while ( 1 ) {
         XNextEvent ( xconfig->dpy, &xEvent );
 
-        if ( xEvent.type == imc->ev_base + XSyncAlarmNotify ) {
-            alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
+        if ( xEvent.type == imc->ev_base + XSyncAlarmNotify ) continue;
 
-            timedOut = XSyncValueLessThan ( alarmEvent->counter_value
-                                          , alarmEvent->alarm_value
-                                          )
-                    && ( lastEventTime != alarmEvent->time );
+        alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
 
-            if ( timedOut ) {
-                imc->attributes->trigger.test_type = XSyncPositiveComparison;
-                se->emitSignal ( se, "Reset", NULL );
-            } else {
-                imc->attributes->trigger.test_type = XSyncNegativeComparison;
-                se->emitSignal ( se, "Idle", NULL );
-            }
+        timedOut = XSyncValueLessThan ( alarmEvent->counter_value
+                                      , alarmEvent->alarm_value
+                                      )
+                && ( lastEventTime != alarmEvent->time );
 
-            XSyncChangeAlarm ( xconfig->dpy, alarm, flags, imc->attributes );
-            lastEventTime = alarmEvent->time;
+        if ( timedOut ) {
+            imc->attributes->trigger.test_type = XSyncPositiveComparison;
+            se->emitSignal ( se, "Reset", NULL );
+        } else {
+            imc->attributes->trigger.test_type = XSyncNegativeComparison;
+            se->emitSignal ( se, "Idle", NULL );
         }
+
+        XSyncChangeAlarm ( xconfig->dpy, alarm, flags, imc->attributes );
+        lastEventTime = alarmEvent->time;
 
     }
 
