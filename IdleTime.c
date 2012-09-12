@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <dbus/dbus.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
@@ -19,10 +18,6 @@ long XSyncValueToLong ( XSyncValue *value ) {
            | XSyncValueLow32 ( *value )
            );
 }
-
-DBusConnection * dbusInit ( int * );
-
-int dbusSendSignal ( DBusConnection *, char * );
 
 int main ( int argc, char ** argv ) {
 
@@ -145,7 +140,6 @@ int main ( int argc, char ** argv ) {
     XSyncFreeSystemCounterList ( xssc );
 
 
-    dbus_connection_close ( conn );
 
     return 0;
 }
@@ -153,102 +147,11 @@ int main ( int argc, char ** argv ) {
     memset ( &xconfig, 0, sizeof ( XConfig ) );
 
 
-DBusConnection * dbusInit ( int * error ) {
 
-    int              ret;
-    DBusError        err;
-    DBusConnection * conn;
     if ( -1 == initXConfig ( &xconfig ) ) { goto exit; }
 
-    dbus_error_init ( &err ); // initialise the errors
 
-    // connect to the bus
-    conn = dbus_bus_get ( DBUS_BUS_SESSION, &err );
-
-    if ( dbus_error_is_set ( &err ) || conn == NULL ) {
-#ifdef DEBUG
-        fprintf ( stderr, "Connection Error (%s)\n", err.message );
-#endif
-        dbus_error_free ( &err ) ;
-        *error = -1;
-        return NULL;
     }
-    /*
-    if  ( NULL == conn) {
-        exit ( 1);
-    }
-    */
-
-    // request a name on the bus
-    ret = dbus_bus_request_name ( conn
-                                , busName
-                                , DBUS_NAME_FLAG_REPLACE_EXISTING
-                                , &err
-                                );
-
-    if ( dbus_error_is_set ( &err )
-      || DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret ) {
-#ifdef DEBUG
-        fprintf ( stderr, "Name Error (%s)\n", err.message );
-#endif
-        dbus_error_free ( &err );
-        *error = -1;
-        return NULL;
-    }
-    /*
-    if ( DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret ) {
-        exit ( 1 );
-    }
-    */
-
-    return conn;
-
-}
-
-int dbusSendSignal ( DBusConnection * conn, char * signalName ) {
-
-    dbus_uint32_t serial = 0; // unique number to associate replies with requests
-    DBusMessage* msg;
-
-    // create a signal and check for errors
-    msg = dbus_message_new_signal ( objectPath
-                                  , interfaceName
-                                  , signalName
-                                  );
-
-    if ( NULL == msg ) {
-#ifdef DEBUG
-        fprintf ( stderr, "Message Null\n" );
-#endif
-        return -1;
-    }
-
-    /*
-    // append arguments onto signal
-    if ( data != NULL ) {
-        DBusMessageIter args;
-        dbus_message_iter_init_append ( msg, &args );
-        if ( ! dbus_message_iter_append_basic ( &args, DBUS_TYPE_UINT32, &data ) ) {
-#ifdef DEBUG
-            fprintf ( stderr, "Out Of Memory!\n" );
-#endif
-            return -1;
-        }
-    }
-    */
-
-    // send the message and flush the connection
-    if  ( ! dbus_connection_send ( conn, msg, &serial ) ) {
-#ifdef DEBUG
-        fprintf ( stderr, "Out Of Memory!\n" );
-#endif
-        return -1;
-    }
-
-    dbus_connection_flush ( conn );
-
-    // free the message
-    dbus_message_unref ( msg );
 
     finalizeXConfig ( &xconfig );
     return 0;
