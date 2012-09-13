@@ -10,21 +10,34 @@ const char * busName       = "org.IdleTime";
 const char * objectPath    = "/org/IdleTime";
 const char * interfaceName = "org.IdleTime";
 
+typedef struct
+    { unsigned int timeout
+    ; const char * busName
+    ; const char * objectPath
+    ; const char * interfaceName
+    ;
+    } Args;
 
 int main ( int argc, char ** argv ) {
 
     int ret = 0;
 
+    Args args = { timeout       = timeout
+                , busName       = busName
+                , objectPath    = objectPath
+                , interfaceName = interfaceName
+                };
+
     XConfig xconfig;
     memset ( &xconfig, 0, sizeof ( XConfig ) );
     SignalEmitter signalemitter;
-    DBusConfig dbusconfig = { busName = busName
-                            , objectPath = objectPath
-                            , interfaceName = interfaceName
+    DBusConfig dbusconfig = { busName = args.busName
+                            , objectPath = args.objectPath
+                            , interfaceName = args.interfaceName
                             };
     IdleMonitorConfig idlemonitorconfig;
     memset ( &idlemonitorconfig, 0, sizeof ( IdleMonitorConfig ) );
-    idlemonitorconfig.timeout = timeout;
+    idlemonitorconfig.timeout = args.timeout;
 
     if ( -1 == initDBus ( &dbusconfig ) ) { goto exit; }
 
