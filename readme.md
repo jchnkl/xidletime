@@ -1,4 +1,4 @@
-# IdleTime
+# xidletime
 ## Sends a DBus signal when you're idle!
 The X server exposes a counter called "IDLETIME" which increases while the user
 is idle. Using an alarm applications can be notified if a certain has been
@@ -29,12 +29,12 @@ Type `make` in the src directory. Should work out of the box.
 
 ## Usage
 
-    idletime [-t|--timeout <timeout>]
-             [-b|--busName <busName>]
-             [-o|--objectPath <objectPath>]
-             [-i|--interfaceName <interfaceName>]
+    xidletime [-t|--idletime <timeout>]
+              [-b|--busName <busName>]
+              [-o|--objectPath <objectPath>]
+              [-i|--interfaceName <interfaceName>]
 
-`timeout`: specifies the time (in microseconds) after which an `Idle` signal is
+`idletime`: specifies the time (in microseconds) after which an `Idle` signal is
 sent. After an `Idle` signal, any user action, like moving the mouse or hitting
 a key, will immediately result in a `Reset` signal.
 
@@ -45,6 +45,6 @@ libdbus and will lead to program termination if not used correctly.
 #### Default Parameters:
 
     timeout:       2000
-    busName:       org.IdleTime
-    objectPath:    /org/IdleTime
-    interfaceName: org.IdleTime
+    busName:       org.xidletime
+    objectPath:    /org/xidletime
+    interfaceName: org.xidletime

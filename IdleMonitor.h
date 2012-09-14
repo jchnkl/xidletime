@@ -9,7 +9,7 @@
 #include "SignalEmitter.h"
 
 typedef struct
-    { unsigned int           timeout
+    { unsigned int           idletime
     ; int                    ev_base
     ; int                    err_base
     ; XSyncSystemCounter   * counter

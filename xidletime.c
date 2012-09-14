@@ -7,13 +7,13 @@
 #include "SignalEmitter.h"
 #include "DBusSignalEmitter.h"
 
-unsigned int timeout       = 2000;
-const char * busName       = "org.IdleTime";
-const char * objectPath    = "/org/IdleTime";
-const char * interfaceName = "org.IdleTime";
+unsigned int idletime      = 2000;
+const char * busName       = "org.xidletime";
+const char * objectPath    = "/org/xidletime";
+const char * interfaceName = "org.xidletime";
 
 typedef struct
-    { unsigned int timeout
+    { unsigned int idletime
     ; const char * busName
     ; const char * objectPath
     ; const char * interfaceName
@@ -26,7 +26,7 @@ int main ( int argc, char ** argv ) {
 
     int ret = 0;
 
-    Args args = { timeout       = timeout
+    Args args = { idletime      = idletime
                 , busName       = busName
                 , objectPath    = objectPath
                 , interfaceName = interfaceName
@@ -43,7 +43,7 @@ int main ( int argc, char ** argv ) {
                             };
     IdleMonitorConfig idlemonitorconfig;
     memset ( &idlemonitorconfig, 0, sizeof ( IdleMonitorConfig ) );
-    idlemonitorconfig.timeout = args.timeout;
+    idlemonitorconfig.idletime = args.idletime;
 
     if ( -1 == initDBus ( &dbusconfig ) ) { goto exit; }
 
@@ -70,7 +70,7 @@ void getargs ( Args * args, int argc, char ** argv ) {
    int c = 0, choice, option_index;
 
    static struct option long_options[] = {
-       {"timeout",       required_argument, 0, 0 },
+       {"idletime",      required_argument, 0, 0 },
        {"busname",       required_argument, 0, 0 },
        {"objectpath",    required_argument, 0, 0 },
        {"interfacename", required_argument, 0, 0 },
@@ -86,7 +86,7 @@ void getargs ( Args * args, int argc, char ** argv ) {
        // strdup is ok here: this will be only called once at program start
        switch ( choice ) {
            case   0:
-           case 't': args->timeout       = strtol ( optarg, NULL, 10 ); break;
+           case 't': args->idletime      = strtol ( optarg, NULL, 10 ); break;
            case   1:
            case 'b': args->busName       = strdup ( optarg ); break;
            case   2:

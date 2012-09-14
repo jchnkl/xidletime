@@ -10,7 +10,7 @@ int initIdleMonitor ( XConfig * xconfig, IdleMonitorConfig * imc ) {
       , major = 0, minor = 0
       , numCounter = 0;
 
-    XSyncValue delta, timeout;
+    XSyncValue delta, idletime;
 
     XSyncSystemCounter * sysCounter= NULL;
 
@@ -46,7 +46,7 @@ int initIdleMonitor ( XConfig * xconfig, IdleMonitorConfig * imc ) {
     if ( imc->counter == NULL ) { ret = -1; goto exit; }
 
     XSyncIntToValue (&delta, 0);
-    XSyncIntToValue (&timeout, imc->timeout);
+    XSyncIntToValue (&idletime, imc->idletime);
 
     imc->attributes = (XSyncAlarmAttributes *)
                       malloc ( sizeof ( XSyncAlarmAttributes ) );
@@ -54,7 +54,7 @@ int initIdleMonitor ( XConfig * xconfig, IdleMonitorConfig * imc ) {
     imc->attributes->trigger.counter    = imc->counter->counter;
     imc->attributes->trigger.value_type = XSyncAbsolute;
     imc->attributes->trigger.test_type  = XSyncPositiveComparison;
-    imc->attributes->trigger.wait_value = timeout;
+    imc->attributes->trigger.wait_value = idletime;
     imc->attributes->delta              = delta;
 
 exit:
