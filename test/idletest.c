@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "IdleMonitor.h"
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <X11/extensions/sync.h>
 
 int main ( int argc, char ** argv ) {
 
