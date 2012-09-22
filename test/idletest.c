@@ -6,6 +6,8 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
+long XSyncValueToLong ( XSyncValue *value );
+
 int main ( int argc, char ** argv ) {
 
     unsigned long flags = XSyncCACounter
@@ -64,6 +66,8 @@ int main ( int argc, char ** argv ) {
     while ( 1 ) {
         XNextEvent ( dpy, &xEvent );
 
+        fprintf ( stderr , "Event! " );
+
         if ( xEvent.type != ev_base + XSyncAlarmNotify ) continue;
 
         alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
@@ -74,12 +78,16 @@ int main ( int argc, char ** argv ) {
            ) {
             attributes.trigger.test_type = XSyncPositiveComparison;
             fprintf ( stderr
-                    , "XSyncPositiveComparison\n"
+                    , "XSyncPositiveComparison; %lu; %lu\n"
+                    , XSyncValueToLong ( &alarmEvent->alarm_value )
+                    , XSyncValueToLong ( &alarmEvent->counter_value )
                     );
         } else {
             attributes.trigger.test_type = XSyncNegativeComparison;
             fprintf ( stderr
-                    , "XSyncNegativeComparison\n"
+                    , "XSyncNegativeComparison; %lu; %lu\n"
+                    , XSyncValueToLong ( &alarmEvent->alarm_value )
+                    , XSyncValueToLong ( &alarmEvent->counter_value )
                     );
         }
 
@@ -90,4 +98,10 @@ int main ( int argc, char ** argv ) {
 
     return 0;
 
+}
+
+long XSyncValueToLong ( XSyncValue *value ) {
+    return ( (long) XSyncValueHigh32 ( *value ) << 32
+            | XSyncValueLow32 ( *value )
+           );
 }
