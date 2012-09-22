@@ -4,77 +4,7 @@
 
 #include "IdleMonitor.h"
 
-int initIdleMonitor ( XConfig * xconfig, IdleMonitorConfig * imc ) {
-
-    int ret = 0
-      , i = 0
-      , major = 0, minor = 0
-      , numCounter = 0;
-
-    XSyncValue delta, idletime;
-
-    XSyncSystemCounter * sysCounter= NULL;
-
-    if ( imc == NULL || checkXConfig ( xconfig ) == -1 ) { ret = -1; goto exit; }
-
-    if ( 0 == XSelectInput ( xconfig->dpy
-                           , xconfig->root
-                           , XSyncAlarmNotifyMask
-                           )
-       ) { ret = -1; goto exit; }
-
-    if ( 0 == XSyncInitialize ( xconfig->dpy, &major, &minor ) ) {
-        ret = -1; goto exit;
-    }
-
-    if ( 0 == XSyncQueryExtension ( xconfig->dpy
-                                  , &imc->ev_base
-                                  , &imc->err_base ) ) {
-        ret = -1; goto exit;
-    }
-
-    if ( NULL == ( sysCounter
-                 = XSyncListSystemCounters ( xconfig->dpy, &numCounter )
-                 )
-       ) { ret = -1; goto exit; }
-
-    for (i = 0; i < numCounter; i++) {
-        if ( 0 == strcmp ( sysCounter[i].name, "IDLETIME" ) ) {
-            imc->counter = &sysCounter[i];
-        }
-    }
-
-    if ( imc->counter == NULL ) { ret = -1; goto exit; }
-
-    XSyncIntToValue (&delta, 0);
-    XSyncIntToValue (&idletime, imc->idletime);
-
-    imc->attributes = (XSyncAlarmAttributes *)
-                      malloc ( sizeof ( XSyncAlarmAttributes ) );
-
-    imc->attributes->trigger.counter    = imc->counter->counter;
-    imc->attributes->trigger.value_type = XSyncAbsolute;
-    imc->attributes->trigger.test_type  = XSyncPositiveComparison;
-    imc->attributes->trigger.wait_value = idletime;
-    imc->attributes->delta              = delta;
-
-exit:
-    if ( sysCounter != NULL ) XSyncFreeSystemCounterList ( sysCounter );
-    return ret;
-}
-
-void finalizeIdleMonitor ( IdleMonitorConfig * imc ) {
-    if ( imc != NULL && imc->attributes != NULL ) {
-        free ( imc->attributes );
-    }
-}
-
-int runIdleMonitor ( XConfig           * xconfig
-                   , IdleMonitorConfig * imc
-                   , SignalEmitter     * se
-                   ) {
-
-    int ret = 0;
+int main ( int argc, char ** argv ) {
 
     unsigned long flags = XSyncCACounter
                         | XSyncCAValueType
@@ -83,22 +13,61 @@ int runIdleMonitor ( XConfig           * xconfig
                         | XSyncCADelta
                         ;
 
-    int idlecount = 0;
+    int idlecount = 0
+      , i = 0
+      , major = 0, minor = 0
+      , ev_base = 0, err_base = 0
+      , numCounter = 0
+      , intIdletime = 1000
+      , backoff = 1000
+      ;
+
     XEvent xEvent;
     Time lastEventTime;
-    XSyncValue idletime;
+    XSyncValue delta, idletime;
     XSyncAlarmNotifyEvent * alarmEvent = NULL;
 
-    if ( checkIdleMonitorConfig ( imc ) == -1
-      || checkXConfig ( xconfig ) == -1
-       ) { ret = -1; goto exit; }
+    XSyncSystemCounter * sysCounter = NULL, * counter = NULL;
 
-    XSyncAlarm alarm = XSyncCreateAlarm ( xconfig->dpy, flags, imc->attributes );
+    Display *dpy = XOpenDisplay ("");
+    Window root = DefaultRootWindow ( dpy );
+
+    XSelectInput ( dpy, root, XSyncAlarmNotifyMask );
+
+    XSyncInitialize ( dpy, &major, &minor );
+
+    XSyncQueryExtension ( dpy , &ev_base , &err_base );
+
+    sysCounter = XSyncListSystemCounters ( dpy, &numCounter );
+
+    for (i = 0; i < numCounter; i++) {
+        if ( 0 == strcmp ( sysCounter[i].name, "IDLETIME" ) ) {
+            counter = &sysCounter[i];
+        }
+    }
+
+    XSyncIntToValue ( &delta, 0 );
+    XSyncIntToValue ( &idletime, intIdletime );
+
+    XSyncAlarmAttributes attributes;
+    attributes.trigger.counter    = counter->counter;
+    attributes.trigger.value_type = XSyncAbsolute;
+    attributes.trigger.test_type  = XSyncPositiveComparison;
+    attributes.trigger.wait_value = idletime;
+    attributes.delta              = delta;
+
+
+    XSyncAlarm alarm = XSyncCreateAlarm ( dpy, flags, &attributes );
 
     while ( 1 ) {
-        XNextEvent ( xconfig->dpy, &xEvent );
+        XNextEvent ( dpy, &xEvent );
 
-        if ( xEvent.type != imc->ev_base + XSyncAlarmNotify ) continue;
+        if ( xEvent.type != ev_base + XSyncAlarmNotify ) continue;
+
+        fprintf ( stderr
+                , "XSyncAlarmNotify\n"
+                );
+
 
         alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
 
@@ -106,56 +75,15 @@ int runIdleMonitor ( XConfig           * xconfig
                                 , alarmEvent->alarm_value
                                 )
            ) {
-            imc->attributes->trigger.test_type  = XSyncPositiveComparison;
-            
-            if ( alarmEvent->time - lastEventTime < imc->backoff ) {
-                XSyncIntToValue ( &idletime
-                                , imc->strategy->getBackoff ( &imc->idletime
-                                                            , &idlecount
-                                                            )
-                                );
-                imc->attributes->trigger.wait_value = idletime;
-            } else {
-                XSyncIntToValue ( &idletime, imc->idletime );
-                imc->attributes->trigger.wait_value = idletime;
-                idlecount = 0;
-            }
 
-            if ( lastEventTime != alarmEvent->time ) {
-                se->emitSignal ( se, "Reset", NULL );
-                fprintf ( stderr, "Reset; reaction_time: %lu; idlecount: %i; idletime: %i\n"
-                        , alarmEvent->time - lastEventTime
-                        , idlecount
-                        , imc->strategy->getBackoff ( &imc->idletime
-                                                    , &idlecount
-                                                    )
-                        );
-            }
         } else {
-            imc->attributes->trigger.test_type = XSyncNegativeComparison;
-            if ( lastEventTime != alarmEvent->time ) {
-                idlecount++;
-                se->emitSignal ( se, "Idle", NULL );
-                fprintf ( stderr, "Idle\n" );
-            }
         }
 
-        XSyncChangeAlarm ( xconfig->dpy, alarm, flags, imc->attributes );
+        XSyncChangeAlarm ( dpy, alarm, flags, &attributes );
         lastEventTime = alarmEvent->time;
 
     }
 
-exit:
-    return ret;
+    return 0;
 
-}
-
-int checkIdleMonitorConfig ( IdleMonitorConfig * imc ) {
-    if ( imc == NULL ) {
-        return -1;
-    } else if ( imc->counter == NULL || imc->attributes == NULL ) {
-        return -1;
-    } else {
-        return 0;
-    }
 }
