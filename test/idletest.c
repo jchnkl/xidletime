@@ -66,19 +66,21 @@ int main ( int argc, char ** argv ) {
 
         if ( xEvent.type != ev_base + XSyncAlarmNotify ) continue;
 
-        fprintf ( stderr
-                , "XSyncAlarmNotify\n"
-                );
-
-
         alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
 
         if ( XSyncValueLessThan ( alarmEvent->counter_value
                                 , alarmEvent->alarm_value
                                 )
            ) {
-
+            attributes.trigger.test_type = XSyncPositiveComparison;
+            fprintf ( stderr
+                    , "XSyncPositiveComparison\n"
+                    );
         } else {
+            attributes.trigger.test_type = XSyncNegativeComparison;
+            fprintf ( stderr
+                    , "XSyncNegativeComparison\n"
+                    );
         }
 
         XSyncChangeAlarm ( dpy, alarm, flags, &attributes );
