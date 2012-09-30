@@ -64,6 +64,8 @@ void distributeMeans ( cluster_t * cluster ) {
         while ( bucket != NULL && bucket->value != 0 ) {
             int idx = minDistance ( cluster, &bucket->value );
 
+            bucket_t * next = bucket->next;
+
             if ( idx != i ) {
 #ifdef DEBUG
                 fprintf ( stderr, "moving %u from %u to %u\n", bucket->value, i, idx );
@@ -105,7 +107,7 @@ void distributeMeans ( cluster_t * cluster ) {
                 bucket = NULL;
             }
 
-            bucket = bucket->next;
+            bucket = next;
         }
 
         /*
