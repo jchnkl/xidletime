@@ -1,5 +1,10 @@
 #include "kMeans.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
 int minDistance ( cluster_t * cluster, unsigned int * value ) {
     int idx = 0, gdist = 0x7fffffff;
     for ( int i = 0; i < cluster->size; i++ ) {
