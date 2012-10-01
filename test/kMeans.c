@@ -134,6 +134,10 @@ int addValue ( cluster_t * cluster, unsigned int * value ) {
     fprintf ( stderr, "updateCluster\n" );
 #endif
     updateCluster ( cluster );
+    if ( cluster->path != NULL ) {
+        FILE * stream = fopen ( cluster->path, "a" );
+        fwrite ( value, sizeof ( unsigned int ), 1, stream );
+        fclose ( stream );
     }
     return idx;
 }
