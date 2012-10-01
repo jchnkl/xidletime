@@ -5,6 +5,88 @@
 #include <string.h>
 #include <math.h>
 
+int makeCluster ( cluster_t * cluster, unsigned int size, const char * path ) {
+
+    long           length;
+    size_t         tsize  = sizeof ( unsigned int );
+    FILE         * stream;
+    unsigned int * values;
+
+    memset ( cluster, 0, sizeof ( cluster_t ) );
+    cluster->size = size;
+
+    kmeans_t * kmeans = (kmeans_t *) calloc ( size, sizeof ( kmeans_t ) );
+    cluster->kmeans = &kmeans[0];
+
+    if ( path != NULL ) {
+        // cluster->path = strdup ( path );
+        cluster->path = path;
+        fprintf ( stderr, "open: %s\n", path );
+        stream = fopen ( path, "a+" );
+    }
+
+    if ( stream != NULL ) {
+        rewind ( stream );
+        fseek ( stream, 0, SEEK_END );
+        length = ftell ( stream );
+        rewind ( stream );
+
+        fprintf ( stderr, "length: %li ", length );
+
+        values = (unsigned int *) malloc ( length );
+
+        fread ( values, tsize, length, stream );
+
+        fprintf ( stderr, "values: " );
+        for ( unsigned int i = 0; i < length / sizeof ( unsigned int ); i++ ) {
+            fprintf ( stderr, "%i ", values[i] );
+            addValue ( cluster, &values[i] );
+        }
+        fprintf ( stderr, "done.\n" );
+
+        free ( values );
+        fclose ( stream );
+
+    } else {
+        return -1;
+    }
+
+    fprintf ( stderr, "makeCluster finished.\n" );
+    return 0;
+}
+
+int finalizeCluster ( cluster_t * cluster ) {
+    FILE * stream = NULL;
+
+    if ( cluster->path != NULL ) {
+        fprintf ( stderr, "open: %s\n", cluster->path );
+        stream = fopen ( cluster->path, "w+" );
+    }
+
+    for ( int i = 0; i < cluster->size; i++ ) {
+        bucket_t * bucket = cluster->kmeans[i].bucket;
+        while ( bucket != NULL ) {
+            if ( stream != NULL ) {
+                fprintf ( stderr, "%u ", bucket->value );
+                fwrite ( &(bucket->value), sizeof ( unsigned int ), 1, stream );
+            }
+            bucket_t * tmp = bucket->next;
+            tmp = bucket->next;
+            free ( bucket );
+            bucket = tmp;
+        }
+    }
+    fprintf ( stderr, "\n" );
+
+    if ( stream != NULL ) {
+        fclose ( stream );
+    }
+
+    free ( cluster->kmeans );
+
+    return 0;
+}
+
 int minDistance ( cluster_t * cluster, unsigned int * value ) {
     int idx = 0, gdist = 0x7fffffff;
     for ( int i = 0; i < cluster->size; i++ ) {

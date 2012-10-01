@@ -13,10 +13,16 @@ typedef struct kmeans_t {
 } kmeans_t;
 
 typedef struct cluster_t {
+    const char * path;
     unsigned int changed;
     unsigned int size;
     kmeans_t * kmeans;
 } cluster_t;
+
+
+int makeCluster ( cluster_t * cluster, unsigned int size, const char * path );
+
+int finalizeCluster ( cluster_t * cluster );
 
 int minDistance ( cluster_t * cluster, unsigned int * value );
 
