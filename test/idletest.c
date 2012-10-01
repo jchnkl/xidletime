@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
+
+#include "kMeans.h"
 
 long XSyncValueToLong ( XSyncValue *value );
 
@@ -17,19 +20,29 @@ int main ( int argc, char ** argv ) {
                         | XSyncCADelta
                         ;
 
-    int idlecount = 0
-      , i = 0
+    int i = 0
+      // , idlecount = 0
       , major = 0, minor = 0
       , ev_base = 0, err_base = 0
       , numCounter = 0
-      , intIdletime = 1000
-      , backoff = 1000
+      , myIdleTime = strtol ( argv[1], NULL, 10 ) * 1000
+      , nwIdleTime = myIdleTime
       ;
 
+    int clustersize = 100;
+    cluster_t cluster;
+    makeCluster ( &cluster, clustersize, "./idletest.dat" );
+
+    for ( int k = 0; k < clustersize; k++ ) {
+        cluster.kmeans[k].mean = myIdleTime * k / (double)clustersize; // myIdleTime / 2;
+    }
+
     XEvent xEvent;
-    Time lastEventTime;
-    XSyncValue delta, idletime;
+    Time lastEventTime = 0;
+    XSyncValue value[3]; //  delta, idletime;
     XSyncAlarmNotifyEvent * alarmEvent = NULL;
+
+    XSyncAlarm alarm[2];
 
     XSyncSystemCounter * sysCounter = NULL, * counter = NULL;
 
@@ -50,51 +63,163 @@ int main ( int argc, char ** argv ) {
         }
     }
 
-    XSyncIntToValue ( &delta, 0 );
-    XSyncIntToValue ( &idletime, intIdletime );
+    XSyncIntToValue ( &value[0], 0 );
+    XSyncIntToValue ( &value[1], myIdleTime );
+    XSyncIntToValue ( &value[2], myIdleTime );
 
-    XSyncAlarmAttributes attributes;
-    attributes.trigger.counter    = counter->counter;
-    attributes.trigger.value_type = XSyncAbsolute;
-    attributes.trigger.test_type  = XSyncPositiveComparison;
-    attributes.trigger.wait_value = idletime;
-    attributes.delta              = delta;
+    XSyncAlarmAttributes attributes[2];
+
+    attributes[0].trigger.counter    = counter->counter;
+    attributes[0].trigger.value_type = XSyncAbsolute;
+    attributes[0].trigger.test_type  = XSyncPositiveComparison;
+    attributes[0].trigger.wait_value = value[1];
+    attributes[0].delta              = value[0];
+
+    attributes[1].trigger.counter    = counter->counter;
+    attributes[1].trigger.value_type = XSyncAbsolute;
+    attributes[1].trigger.test_type  = XSyncPositiveComparison;
+    attributes[1].trigger.wait_value = value[2];
+    attributes[1].delta              = value[0];
 
 
-    XSyncAlarm alarm = XSyncCreateAlarm ( dpy, flags, &attributes );
+    alarm[0] = XSyncCreateAlarm ( dpy, flags, &attributes[0] );
+    alarm[1] = XSyncCreateAlarm ( dpy, flags, &attributes[1] );
+
+    char buf[64];
 
     while ( 1 ) {
+        memset ( buf, 0, 63 );
         XNextEvent ( dpy, &xEvent );
-
-        fprintf ( stderr , "Event! " );
 
         if ( xEvent.type != ev_base + XSyncAlarmNotify ) continue;
 
         alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
 
-        if ( XSyncValueLessThan ( alarmEvent->counter_value
-                                , alarmEvent->alarm_value
-                                )
-           ) {
-            attributes.trigger.test_type = XSyncPositiveComparison;
-            fprintf ( stderr
-                    , "XSyncPositiveComparison; %lu; %lu\n"
-                    , XSyncValueToLong ( &alarmEvent->alarm_value )
-                    , XSyncValueToLong ( &alarmEvent->counter_value )
-                    );
-        } else {
-            attributes.trigger.test_type = XSyncNegativeComparison;
-            fprintf ( stderr
-                    , "XSyncNegativeComparison; %lu; %lu\n"
-                    , XSyncValueToLong ( &alarmEvent->alarm_value )
-                    , XSyncValueToLong ( &alarmEvent->counter_value )
-                    );
+        if ( alarmEvent->alarm == alarm[0] ) {
+            strcat ( buf,  "alarm[0]: " );
+            if ( XSyncValueLessThan ( alarmEvent->counter_value
+                                    , alarmEvent->alarm_value
+                                    )
+               ) {
+                strcat ( buf,  "Reset" );
+                attributes[0].trigger.test_type = XSyncPositiveComparison;
+
+                if ( lastEventTime != 0 && lastEventTime < alarmEvent->time ) {
+
+
+                    unsigned int time = alarmEvent->time - lastEventTime;
+
+                    int    class = addValue ( &cluster, &time ) + 1;
+                    // double prob  = (double)clustersize / (double)(class + 1);
+                    // double prob  = (double)class / (double)clustersize;
+
+                    if ( class < 50 ) {
+                        // bc:
+                        // for (i=50; i<=100; i=i+5) {
+                        //  r = 1 + sqrt ( ( i - 50 ) * 2 / 100 );
+                        //  print i, ": ", r, "\n";
+                        // }
+                        int newtime = nwIdleTime * ( 1.0 + sqrt ( class * 2.0 / 100.0 ) );
+                        if ( newtime >= myIdleTime ) nwIdleTime = newtime;
+                        char tmp[16];
+                        snprintf ( tmp
+                                 , 16
+                                 , " [p<50: %.2f]"
+                                 , ( 1.0 + sqrt ( class * 2.0 / 100.0 ) )
+                                 );
+                        strcat ( buf, tmp );
+                    } else {
+                        // bc:
+                        // for (i=50; i>=0; i=i-5) {
+                        // r = 1 + sqrt ( ( 50 - i ) * 2 / 100 );
+                        // print i, ": ", r, "\n";
+                        // }
+                        int newtime = nwIdleTime / ( 1.0 + sqrt ( ( class - 50 ) * 2.0 / 100.0 ) );
+                        if ( newtime >= myIdleTime ) nwIdleTime = newtime;
+                        char tmp[16];
+                        snprintf ( tmp
+                                 , 16
+                                 , " [p>50: %.2f]"
+                                 , ( 1.0 + sqrt ( ( class - 50 ) * 2.0 / 100.0 ) )
+                                 );
+                        strcat ( buf, tmp );
+                    }
+
+                    if ( nwIdleTime >= myIdleTime ) {
+                        XSyncIntToValue ( &value[1], nwIdleTime );
+                        attributes[0].trigger.wait_value = value[1];
+                    }
+
+                    int valueCount = 0;
+                    for ( int c = 0; c < cluster.size; c++ ) {
+                        valueCount += cluster.kmeans[c].fillcount;
+                    }
+
+                    char tmp[32];
+                    snprintf ( tmp
+                             , 32
+                             // , " %i / %i = %.2f (%i) (%i)"
+                             , " %i; %i; %i"
+                             , class
+                             // , clustersize
+                             // , prob
+                             , nwIdleTime / 1000
+                             , valueCount
+                             );
+                    strcat ( buf, tmp );
+
+                    /*
+                    fprintf ( stderr
+                            , "added %u to class %i; probabilty: %f\n"
+                            , time
+                            , class
+                            , (double)class / (double)clustersize
+                            );
+                    printMeans ( &cluster );
+                    */
+
+                }
+
+            } else {
+                strcat ( buf,  "Idle" );
+                attributes[0].trigger.test_type = XSyncNegativeComparison;
+            }
+            XSyncChangeAlarm ( dpy, alarm[0], flags, &attributes[0] );
+
+            if ( lastEventTime < alarmEvent->time ) {
+                fprintf ( stderr, "%s\n", buf );
+            }
+            lastEventTime = alarmEvent->time;
+
+        } else if ( alarmEvent->alarm == alarm[1] ) {
+
+            if ( XSyncValueLessThan ( alarmEvent->counter_value
+                                    , alarmEvent->alarm_value
+                                    )
+               ) {
+                int degrade = nwIdleTime - myIdleTime;
+
+                if ( 0 && degrade >= myIdleTime ) {
+                    nwIdleTime = degrade;
+                    XSyncIntToValue ( &value[1], degrade );
+                    attributes[0].trigger.wait_value = value[1];
+                    attributes[0].trigger.test_type = XSyncPositiveComparison;
+                    XSyncChangeAlarm ( dpy, alarm[0], flags, &attributes[0] );
+                    fprintf ( stderr, "degrading to %i\n", degrade );
+                    fprintf ( stderr, "\n" );
+                }
+
+                attributes[1].trigger.test_type = XSyncPositiveComparison;
+            } else {
+                attributes[1].trigger.test_type = XSyncNegativeComparison;
+            }
+            XSyncChangeAlarm ( dpy, alarm[1], flags, &attributes[1] );
+
         }
 
-        XSyncChangeAlarm ( dpy, alarm, flags, &attributes );
-        lastEventTime = alarmEvent->time;
-
     }
+
+    finalizeCluster ( &cluster );
 
     return 0;
 
