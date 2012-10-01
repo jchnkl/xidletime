@@ -119,18 +119,11 @@ int findValue ( cluster_t * cluster, unsigned int * value ) {
 }
 
 int addValue ( cluster_t * cluster, unsigned int * value ) {
-    /* int idx = findValue ( cluster, value );
-    if ( idx == -1 ) {
-    */
         int idx = minDistance ( cluster, value );
         addKMeanValue ( cluster, &idx, value );
         updateCluster ( cluster );
         return idx;
-    /*
-    } else {
-        return -1;
     }
-    */
 }
 
 void distributeMeans ( cluster_t * cluster ) {
@@ -138,9 +131,6 @@ void distributeMeans ( cluster_t * cluster ) {
     fprintf ( stderr, "==================== distributeMeans begin ==================== \n");
 #endif
     for ( int i = 0; i < cluster->size; i++ ) {
-
-        // bucket_t * prev, * next; //   = &cluster->kmeans[i].bucket;
-        // bucket_t * tmp; //   = cluster->kmeans[i].bucket;
 
         if ( cluster->kmeans[i].bucket == NULL ) continue;
 
@@ -161,19 +151,8 @@ void distributeMeans ( cluster_t * cluster ) {
                 cluster->changed++;
                 addKMeanValue ( cluster, &idx, &bucket->value );
 
-                /*
-                if ( prev == NULL ) {
-                    cluster->kmeans[i].bucket = bucket->next;
-                } else if ( bucket->next == NULL ) {
-                    prev->next = NULL;
-                } else {
-                    prev->next = bucket->next;
-                }
-                */
-                // cluster->kmeans[i].bucket->value = 0;
                 bucket->value = 0;
                 cluster->kmeans[i].fillcount--;
-                // free ( bucket );
 
                 if ( bucket == cluster->kmeans[i].bucket ) {
                     cluster->kmeans[i].bucket = bucket->next;
@@ -196,18 +175,6 @@ void distributeMeans ( cluster_t * cluster ) {
 
             bucket = next;
         }
-
-        /*
-        for ( int j = 0; j < cluster->kmeans[i].fillcount % BUCKETSIZE; j++ ) {
-            unsigned int idx = minDistance ( cluster, &cluster->kmeans[i].values[j] );
-            if ( idx != i ) {
-                cluster->changed++;
-                addKMeanValue ( cluster, &idx, &cluster->kmeans[i].values[j] );
-                cluster->kmeans[i].values[j] = 0;
-                cluster->kmeans[i].fillcount--;
-            }
-        }
-        */
     }
 #ifdef DEBUG
     if ( cluster->changed != 0 ) {
@@ -225,30 +192,12 @@ void updateMeans ( cluster_t * cluster ) {
     bucket_t * bucket;
     for ( int i = 0; i < cluster->size; i++ ) {
         if ( cluster->kmeans[i].fillcount == 0 ) continue;
-        // if ( cluster->kmeans[i].bucket == NULL ) continue;
-        // fprintf ( stderr, "calculating kmeans[%i] for\t", i );
         bucket = cluster->kmeans[i].bucket;
         while ( bucket != NULL && bucket->value != 0 ) {
-            // fprintf ( stderr, "%u ", bucket->value );
-            // if ( bucket->value == 0 ) exit ( EXIT_FAILURE );
-
             newmean += bucket->value;
             bucket = bucket->next;
         }
         cluster->kmeans[i].mean = newmean / ( cluster->kmeans[i].fillcount );
-        /*
-        fprintf ( stderr, "\nnewmean: %u / %u = %u\n"
-                , newmean
-                , cluster->kmeans[i].fillcount
-                , cluster->kmeans[i].mean
-                );
-        */
-        /*
-        for ( int j = 0; j < cluster->kmeans[i].fillcount; j++ ) {
-            newmean += cluster->kmeans[i].values[j];
-        }
-        cluster->kmeans[i].mean = newmean / ( cluster->kmeans[i].fillcount % BUCKETSIZE );
-        */
         newmean = 0;
     }
 #ifdef DEBUG
