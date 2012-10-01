@@ -105,6 +105,9 @@ void addKMeanValue ( cluster_t * cluster, int * idx, unsigned int * value ) {
     tmp->next = cluster->kmeans[*idx].bucket;
     cluster->kmeans[*idx].bucket = tmp;
     cluster->kmeans[*idx].fillcount++;
+#ifdef DEBUG
+    fprintf ( stderr, "ADDVALUE finished\n" );
+#endif
 }
 
 int findValue ( cluster_t * cluster, unsigned int * value ) {
@@ -119,11 +122,20 @@ int findValue ( cluster_t * cluster, unsigned int * value ) {
 }
 
 int addValue ( cluster_t * cluster, unsigned int * value ) {
-        int idx = minDistance ( cluster, value );
-        addKMeanValue ( cluster, &idx, value );
-        updateCluster ( cluster );
-        return idx;
+#ifdef DEBUG
+    fprintf ( stderr, "minDistance\n" );
+#endif
+    int idx = minDistance ( cluster, value );
+#ifdef DEBUG
+    fprintf ( stderr, "addKMeanValue\n" );
+#endif
+    addKMeanValue ( cluster, &idx, value );
+#ifdef DEBUG
+    fprintf ( stderr, "updateCluster\n" );
+#endif
+    updateCluster ( cluster );
     }
+    return idx;
 }
 
 void distributeMeans ( cluster_t * cluster ) {
@@ -208,7 +220,13 @@ void updateMeans ( cluster_t * cluster ) {
 void updateCluster ( cluster_t * cluster ) {
     do {
         cluster->changed = 0;
+#ifdef DEBUG
+    fprintf ( stderr, "updateMeans\n" );
+#endif
         updateMeans ( cluster );
+#ifdef DEBUG
+    fprintf ( stderr, "distributeMeans\n" );
+#endif
         distributeMeans ( cluster );
     } while ( cluster->changed != 0 );
 
@@ -216,6 +234,9 @@ void updateCluster ( cluster_t * cluster ) {
         return ((kmeans_t *)kmeansl)->mean > ((kmeans_t *)kmeansr)->mean;
     }
 
+#ifdef DEBUG
+    fprintf ( stderr, "qsort\n" );
+#endif
     qsort ( cluster->kmeans, cluster->size, sizeof ( kmeans_t ), compMeans );
 }
 
