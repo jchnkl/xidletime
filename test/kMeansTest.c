@@ -1,17 +1,14 @@
+#include "stdio.h"
+
 #include "kMeans.h"
 
-#define NVALUES 1000
-#define CLUSTERSIZE 16
+#define NVALUES 10
+#define CLUSTERSIZE 8
 
 int main ( int argc, char ** argv ) {
 
     cluster_t cluster;
-    memset ( &cluster, 0, sizeof ( cluster ) );
-    kmeans_t kmeans[CLUSTERSIZE];
-    memset ( &kmeans, 0, sizeof ( kmeans ) );
-
-    cluster.size = CLUSTERSIZE;
-    cluster.kmeans = &kmeans[0];
+    makeCluster ( &cluster, CLUSTERSIZE, "/tmp/clustertest" );
 
     cluster.kmeans[0].mean = 3 * NVALUES / 4;
     cluster.kmeans[1].mean = NVALUES / 2;
@@ -20,6 +17,11 @@ int main ( int argc, char ** argv ) {
     // cluster.kmeans[0].mean = 0;
     // cluster.kmeans[1].mean = myIdleTime / 2;
 
+    for ( unsigned int i = 0; i < NVALUES; i++ ) {
+        addValue ( &cluster, &i );
+    }
+
+    if ( 0 ) {
     for ( unsigned int i = NVALUES / 4; i < NVALUES / 2; i++ ) {
         unsigned int val = i; // * ( i % CLUSTERSIZE );
         if ( val != 0 ) {
@@ -83,5 +85,8 @@ int main ( int argc, char ** argv ) {
     }
 
     fprintf ( stderr, "count: %i; zeros: %i\n", count, zeros );
+    }
+
     printMeans ( &cluster );
+    finalizeCluster ( &cluster );
 }
