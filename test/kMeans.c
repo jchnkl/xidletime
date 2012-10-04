@@ -21,7 +21,9 @@ int makeCluster ( cluster_t * cluster, unsigned int size, const char * path ) {
     if ( path != NULL ) {
         // cluster->path = strdup ( path );
         cluster->path = path;
+#ifdef DEBUG
         fprintf ( stderr, "open: %s\n", path );
+#endif
         stream = fopen ( path, "a+" );
     }
 
@@ -31,18 +33,26 @@ int makeCluster ( cluster_t * cluster, unsigned int size, const char * path ) {
         length = ftell ( stream );
         rewind ( stream );
 
+#ifdef DEBUG
         fprintf ( stderr, "length: %li ", length );
+#endif
 
         values = (unsigned int *) malloc ( length );
 
         fread ( values, tsize, length, stream );
 
+#ifdef DEBUG
         fprintf ( stderr, "values: " );
+#endif
         for ( unsigned int i = 0; i < length / sizeof ( unsigned int ); i++ ) {
+#ifdef DEBUG
             fprintf ( stderr, "%i ", values[i] );
+#endif
             addValue ( cluster, &values[i] );
         }
+#ifdef DEBUG
         fprintf ( stderr, "done.\n" );
+#endif
 
         free ( values );
         fclose ( stream );
@@ -51,7 +61,9 @@ int makeCluster ( cluster_t * cluster, unsigned int size, const char * path ) {
         return -1;
     }
 
+#ifdef DEBUG
     fprintf ( stderr, "makeCluster finished.\n" );
+#endif
     return 0;
 }
 
@@ -59,7 +71,9 @@ int finalizeCluster ( cluster_t * cluster ) {
     FILE * stream = NULL;
 
     if ( cluster->path != NULL ) {
+#ifdef DEBUG
         fprintf ( stderr, "open: %s\n", cluster->path );
+#endif
         stream = fopen ( cluster->path, "w+" );
     }
 
@@ -67,7 +81,9 @@ int finalizeCluster ( cluster_t * cluster ) {
         bucket_t * bucket = cluster->kmeans[i].bucket;
         while ( bucket != NULL ) {
             if ( stream != NULL ) {
+#ifdef DEBUG
                 fprintf ( stderr, "%u ", bucket->value );
+#endif
                 fwrite ( &(bucket->value), sizeof ( unsigned int ), 1, stream );
             }
             bucket_t * tmp = bucket->next;
@@ -76,7 +92,9 @@ int finalizeCluster ( cluster_t * cluster ) {
             bucket = tmp;
         }
     }
+#ifdef DEBUG
     fprintf ( stderr, "\n" );
+#endif
 
     if ( stream != NULL ) {
         fclose ( stream );
