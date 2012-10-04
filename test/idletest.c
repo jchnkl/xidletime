@@ -21,7 +21,6 @@ int main ( int argc, char ** argv ) {
                         ;
 
     int i = 0
-      // , idlecount = 0
       , major = 0, minor = 0
       , ev_base = 0, err_base = 0
       , numCounter = 0
@@ -34,12 +33,12 @@ int main ( int argc, char ** argv ) {
     makeCluster ( &cluster, clustersize, "./idletest.dat" );
 
     for ( int k = 0; k < clustersize; k++ ) {
-        cluster.kmeans[k].mean = myIdleTime * k / (double)clustersize; // myIdleTime / 2;
+        cluster.kmeans[k].mean = myIdleTime * k / (double)clustersize;
     }
 
     XEvent xEvent;
     Time lastEventTime = 0;
-    XSyncValue value[3]; //  delta, idletime;
+    XSyncValue value[3];
     XSyncAlarmNotifyEvent * alarmEvent = NULL;
 
     XSyncAlarm alarm[2];
@@ -110,8 +109,6 @@ int main ( int argc, char ** argv ) {
                     unsigned int time = alarmEvent->time - lastEventTime;
 
                     int    class = addValue ( &cluster, &time ) + 1;
-                    // double prob  = (double)clustersize / (double)(class + 1);
-                    // double prob  = (double)class / (double)clustersize;
 
                     if ( class < 50 ) {
                         // bc:
