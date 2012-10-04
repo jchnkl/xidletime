@@ -119,13 +119,13 @@ int main ( int argc, char ** argv ) {
                         //  r = 1 + sqrt ( ( i - 50 ) * 2 / 100 );
                         //  print i, ": ", r, "\n";
                         // }
-                        int newtime = nwIdleTime * ( 1.0 + sqrt ( class * 2.0 / 100.0 ) );
+                        int newtime = nwIdleTime * ( 1.0 + sqrt ( ( 50 - class ) * 2.0 / 100.0 ) );
                         if ( newtime >= myIdleTime ) nwIdleTime = newtime;
                         char tmp[16];
                         snprintf ( tmp
                                  , 16
                                  , " [p<50: %.2f]"
-                                 , ( 1.0 + sqrt ( class * 2.0 / 100.0 ) )
+                                 , ( 1.0 + sqrt ( ( 50 - class ) * 2.0 / 100.0 ) )
                                  );
                         strcat ( buf, tmp );
                     } else {
