@@ -74,7 +74,7 @@ int finalizeCluster ( cluster_t * cluster ) {
 #ifdef DEBUG
         fprintf ( stderr, "open: %s\n", cluster->path );
 #endif
-        stream = fopen ( cluster->path, "w+" );
+        // stream = fopen ( cluster->path, "w+" );
     }
 
     for ( int i = 0; i < cluster->size; i++ ) {
@@ -84,7 +84,7 @@ int finalizeCluster ( cluster_t * cluster ) {
 #ifdef DEBUG
                 fprintf ( stderr, "%u ", bucket->value );
 #endif
-                fwrite ( &(bucket->value), sizeof ( unsigned int ), 1, stream );
+                // fwrite ( &(bucket->value), sizeof ( unsigned int ), 1, stream );
             }
             bucket_t * tmp = bucket->next;
             tmp = bucket->next;
@@ -97,7 +97,7 @@ int finalizeCluster ( cluster_t * cluster ) {
 #endif
 
     if ( stream != NULL ) {
-        fclose ( stream );
+        // fclose ( stream );
     }
 
     free ( cluster->kmeans );
@@ -152,11 +152,13 @@ int addValue ( cluster_t * cluster, unsigned int * value ) {
     fprintf ( stderr, "updateCluster\n" );
 #endif
     updateCluster ( cluster );
+    /*
     if ( cluster->path != NULL ) {
         FILE * stream = fopen ( cluster->path, "a" );
         fwrite ( value, sizeof ( unsigned int ), 1, stream );
         fclose ( stream );
     }
+    */
     return idx;
 }
 
