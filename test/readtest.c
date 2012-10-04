@@ -37,6 +37,37 @@ int main ( int argc, char ** argv ) {
 
     fprintf ( stdout, "# of values: %li\n", len / sizeof ( unsigned int ) );
 
+    int cmp ( const void *a, const void *b ) {
+        return *(unsigned int *)a > *(unsigned int *)b;
+    }
+
+    qsort ( bar
+          , len / sizeof ( unsigned int )
+          , sizeof ( unsigned int )
+          , cmp
+          );
+
+    for ( int i = 0; i < len / sizeof ( unsigned int ); i++ ) {
+        if ( bar[i] < 10 ) { bar[i] = 0; continue; }
+        int dup = 0;
+        for ( int j = 0; j < len / sizeof ( unsigned int ); j++ ) {
+            if ( bar[i] == bar[j] && dup++ > 0 ) bar[i] = 0;
+        }
+    }
+
+    int count = 0;
+    unsigned int * foo = NULL;
+    for ( int i = 0; i < len / sizeof ( unsigned int ); i++ ) {
+        if ( bar[i] != 0 ) {
+            foo = realloc ( foo, ++count * sizeof ( unsigned int ) );
+            foo[count-1] = bar[i];
+        }
+    }
+
+    free ( bar );
+    len = count * sizeof ( unsigned int );
+    bar = foo;
+
     unsigned int max = 0;
     for ( int i = 0; i < len / sizeof ( unsigned int ); i++ ) {
         if ( bar[i] > max ) max = bar[i];
@@ -58,7 +89,18 @@ int main ( int argc, char ** argv ) {
     }
     fprintf ( stdout, "\n" );
 
-    free ( bar );
+    // uncomment this to write the cleared list back
+    /*
+    stream = fopen ( argv[1], "w" );
+
+    fwrite ( &foo[0], sizeof ( unsigned int ), count, stream );
+
+    fclose ( stream );
+    */
+
+    free ( foo );
+
+    // free ( bar );
 
     return 0;
 }
