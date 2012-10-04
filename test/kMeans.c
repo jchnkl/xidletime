@@ -275,8 +275,10 @@ void printMeans ( cluster_t * cluster ) {
 
         bucket = cluster->kmeans[i].bucket;
 
+        int sum = 0, count = 0;
         while ( bucket != NULL ) {
             fprintf ( stderr, "%u ", bucket->value );
+            count++; sum+= bucket->value;
             bucket = bucket->next;
         }
         /*
@@ -284,6 +286,6 @@ void printMeans ( cluster_t * cluster ) {
             fprintf ( stderr, "%u ", cluster->kmeans[i].values[j] );
         }
         */
-        fprintf ( stderr, "\n" );
+        fprintf ( stderr, "\ncalculated mean is: %f\n\n", sum / (double)count );
     }
 }
