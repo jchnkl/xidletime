@@ -11,14 +11,11 @@ void readMeans ( void (*func )( unsigned int * ), char * fileName );
 int main ( int argc, char ** argv ) {
 
     cluster_t cluster;
-    makeCluster ( &cluster, CLUSTERSIZE, "/tmp/clustertest" );
-
-    for ( unsigned int i = 0; i < NVALUES; i++ ) {
-        addValue ( &cluster, &i );
-    }
+    makeCluster ( &cluster, CLUSTERSIZE, argv[1] );
 
     printMeans ( &cluster );
     finalizeCluster ( &cluster );
+
 }
 
 void readMeans ( void (*func )( unsigned int * ), char * fileName ) {
