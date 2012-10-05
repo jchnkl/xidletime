@@ -28,7 +28,7 @@ int main ( int argc, char ** argv ) {
       , nwIdleTime = myIdleTime
       ;
 
-    char groupFile = argv[1];
+    char * groupFile = argv[1];
 
     int groupsize = 100;
     group_t group;
