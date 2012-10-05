@@ -6,39 +6,39 @@ typedef struct bucket_t {
     struct bucket_t * next;
 } bucket_t;
 
-typedef struct kmeans_t {
+typedef struct cluster_t {
     unsigned int mean;
     unsigned int fillcount;
     bucket_t * bucket;
-} kmeans_t;
+} cluster_t;
 
-typedef struct cluster_t {
+typedef struct group_t {
     const char * path;
     unsigned int changed;
     unsigned int size;
-    kmeans_t * kmeans;
-} cluster_t;
+    cluster_t * cluster;
+} group_t;
 
 
-int makeCluster ( cluster_t * cluster, unsigned int size, const char * path );
+int makeGroup ( group_t * group, unsigned int size, const char * path );
 
-int finalizeCluster ( cluster_t * cluster );
+int finalizeGroup ( group_t * group );
 
-int minDistance ( cluster_t * cluster, unsigned int * value );
+int minDistance ( group_t * group, unsigned int * value );
 
-void addKMeanValue ( cluster_t * cluster, int * idx, unsigned int * value );
+void addKMeanValue ( group_t * group, int * idx, unsigned int * value );
 
-int findValue ( cluster_t * cluster, unsigned int * value );
+int findValue ( group_t * group, unsigned int * value );
 
-int addValue ( cluster_t * cluster, unsigned int * value );
+int addValue ( group_t * group, unsigned int * value );
 
-void distributeMeans ( cluster_t * cluster );
+void distributeMeans ( group_t * group );
 
-void updateMeans ( cluster_t * cluster );
+void updateMeans ( group_t * group );
 
-void updateCluster ( cluster_t * cluster );
+void updateGroup ( group_t * group );
 
-void printMeans ( cluster_t * cluster );
+void printMeans ( group_t * group );
 
 
 #endif

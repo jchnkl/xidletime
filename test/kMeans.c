@@ -5,22 +5,22 @@
 #include <string.h>
 #include <math.h>
 
-int makeCluster ( cluster_t * cluster, unsigned int size, const char * path ) {
+int makeGroup ( group_t * group, unsigned int size, const char * path ) {
 
     long           length;
     size_t         tsize  = sizeof ( unsigned int );
     FILE         * stream;
     unsigned int * values;
 
-    memset ( cluster, 0, sizeof ( cluster_t ) );
-    cluster->size = size;
+    memset ( group, 0, sizeof ( group_t ) );
+    group->size = size;
 
-    kmeans_t * kmeans = (kmeans_t *) calloc ( size, sizeof ( kmeans_t ) );
-    cluster->kmeans = &kmeans[0];
+    cluster_t * cluster = (cluster_t *) calloc ( size, sizeof ( cluster_t ) );
+    group->cluster = &cluster[0];
 
     if ( path != NULL ) {
-        // cluster->path = strdup ( path );
-        cluster->path = path;
+        // group->path = strdup ( path );
+        group->path = path;
 #ifdef DEBUG
         fprintf ( stderr, "open: %s\n", path );
 #endif
@@ -48,7 +48,7 @@ int makeCluster ( cluster_t * cluster, unsigned int size, const char * path ) {
 #ifdef DEBUG
             fprintf ( stderr, "%i ", values[i] );
 #endif
-            addValue ( cluster, &values[i] );
+            addValue ( group, &values[i] );
         }
 #ifdef DEBUG
         fprintf ( stderr, "done.\n" );
@@ -62,23 +62,23 @@ int makeCluster ( cluster_t * cluster, unsigned int size, const char * path ) {
     }
 
 #ifdef DEBUG
-    fprintf ( stderr, "makeCluster finished.\n" );
+    fprintf ( stderr, "makeGroup finished.\n" );
 #endif
     return 0;
 }
 
-int finalizeCluster ( cluster_t * cluster ) {
+int finalizeGroup ( group_t * group ) {
     FILE * stream = NULL;
 
-    if ( cluster->path != NULL ) {
+    if ( group->path != NULL ) {
 #ifdef DEBUG
-        fprintf ( stderr, "open: %s\n", cluster->path );
+        fprintf ( stderr, "open: %s\n", group->path );
 #endif
-        // stream = fopen ( cluster->path, "w+" );
+        // stream = fopen ( group->path, "w+" );
     }
 
-    for ( int i = 0; i < cluster->size; i++ ) {
-        bucket_t * bucket = cluster->kmeans[i].bucket;
+    for ( int i = 0; i < group->size; i++ ) {
+        bucket_t * bucket = group->cluster[i].bucket;
         while ( bucket != NULL ) {
             if ( stream != NULL ) {
 #ifdef DEBUG
@@ -100,37 +100,37 @@ int finalizeCluster ( cluster_t * cluster ) {
         // fclose ( stream );
     }
 
-    free ( cluster->kmeans );
+    free ( group->cluster );
 
     return 0;
 }
 
-int minDistance ( cluster_t * cluster, unsigned int * value ) {
+int minDistance ( group_t * group, unsigned int * value ) {
     int idx = 0, gdist = 0x7fffffff;
-    for ( int i = 0; i < cluster->size; i++ ) {
-        int ldist = abs ( * value - cluster->kmeans[i].mean );
+    for ( int i = 0; i < group->size; i++ ) {
+        int ldist = abs ( * value - group->cluster[i].mean );
         if ( ldist < gdist ) { gdist = ldist; idx = i; }
     }
     return idx;
 }
 
-void addKMeanValue ( cluster_t * cluster, int * idx, unsigned int * value ) {
+void addKMeanValue ( group_t * group, int * idx, unsigned int * value ) {
 #ifdef DEBUG
     fprintf ( stderr, "ADDVALUE: %u; IDX: %i\n", *value, *idx );
 #endif
     bucket_t * tmp = (bucket_t *) calloc ( 1, sizeof ( bucket_t ) );
     tmp->value = *value;
-    tmp->next = cluster->kmeans[*idx].bucket;
-    cluster->kmeans[*idx].bucket = tmp;
-    cluster->kmeans[*idx].fillcount++;
+    tmp->next = group->cluster[*idx].bucket;
+    group->cluster[*idx].bucket = tmp;
+    group->cluster[*idx].fillcount++;
 #ifdef DEBUG
     fprintf ( stderr, "ADDVALUE finished\n" );
 #endif
 }
 
-int findValue ( cluster_t * cluster, unsigned int * value ) {
-    for ( int i = 0; i < cluster->size; i++ ) {
-        bucket_t * bucket = cluster->kmeans[i].bucket;
+int findValue ( group_t * group, unsigned int * value ) {
+    for ( int i = 0; i < group->size; i++ ) {
+        bucket_t * bucket = group->cluster[i].bucket;
         while ( bucket != NULL ) {
             if ( bucket->value == *value ) return i;
             bucket = bucket->next;
@@ -139,22 +139,22 @@ int findValue ( cluster_t * cluster, unsigned int * value ) {
     return -1;
 }
 
-int addValue ( cluster_t * cluster, unsigned int * value ) {
+int addValue ( group_t * group, unsigned int * value ) {
 #ifdef DEBUG
     fprintf ( stderr, "minDistance\n" );
 #endif
-    int idx = minDistance ( cluster, value );
+    int idx = minDistance ( group, value );
 #ifdef DEBUG
     fprintf ( stderr, "addKMeanValue\n" );
 #endif
-    addKMeanValue ( cluster, &idx, value );
+    addKMeanValue ( group, &idx, value );
 #ifdef DEBUG
-    fprintf ( stderr, "updateCluster\n" );
+    fprintf ( stderr, "updateGroup\n" );
 #endif
-    updateCluster ( cluster );
+    updateGroup ( group );
     /*
-    if ( cluster->path != NULL ) {
-        FILE * stream = fopen ( cluster->path, "a" );
+    if ( group->path != NULL ) {
+        FILE * stream = fopen ( group->path, "a" );
         fwrite ( value, sizeof ( unsigned int ), 1, stream );
         fclose ( stream );
     }
@@ -162,20 +162,20 @@ int addValue ( cluster_t * cluster, unsigned int * value ) {
     return idx;
 }
 
-void distributeMeans ( cluster_t * cluster ) {
+void distributeMeans ( group_t * group ) {
 #ifdef DEBUG
     fprintf ( stderr, "==================== distributeMeans begin ==================== \n");
 #endif
-    for ( int i = 0; i < cluster->size; i++ ) {
+    for ( int i = 0; i < group->size; i++ ) {
 
-        if ( cluster->kmeans[i].bucket == NULL ) continue;
+        if ( group->cluster[i].bucket == NULL ) continue;
 
         // copy of pointer
-        bucket_t * prev   = NULL; // cluster->kmeans[i].bucket;
-        bucket_t * bucket = cluster->kmeans[i].bucket;
+        bucket_t * prev   = NULL; // group->cluster[i].bucket;
+        bucket_t * bucket = group->cluster[i].bucket;
 
         while ( bucket != NULL && bucket->value != 0 ) {
-            int idx = minDistance ( cluster, &bucket->value );
+            int idx = minDistance ( group, &bucket->value );
 
             bucket_t * next = bucket->next;
 
@@ -184,14 +184,14 @@ void distributeMeans ( cluster_t * cluster ) {
                 fprintf ( stderr, "moving %u from %u to %u\n", bucket->value, i, idx );
 #endif
 
-                cluster->changed++;
-                addKMeanValue ( cluster, &idx, &bucket->value );
+                group->changed++;
+                addKMeanValue ( group, &idx, &bucket->value );
 
                 bucket->value = 0;
-                cluster->kmeans[i].fillcount--;
+                group->cluster[i].fillcount--;
 
-                if ( bucket == cluster->kmeans[i].bucket ) {
-                    cluster->kmeans[i].bucket = bucket->next;
+                if ( bucket == group->cluster[i].bucket ) {
+                    group->cluster[i].bucket = bucket->next;
                     free ( bucket );
                 } else {
                     // prev is old bucket ( prev == bucket )
@@ -204,8 +204,8 @@ void distributeMeans ( cluster_t * cluster ) {
                 prev = bucket;
             }
 
-            if ( cluster->kmeans[i].fillcount == 0 ) {
-                cluster->kmeans[i].bucket = NULL;
+            if ( group->cluster[i].fillcount == 0 ) {
+                group->cluster[i].bucket = NULL;
                 bucket = NULL;
             }
 
@@ -213,27 +213,27 @@ void distributeMeans ( cluster_t * cluster ) {
         }
     }
 #ifdef DEBUG
-    if ( cluster->changed != 0 ) {
-        printMeans ( cluster );
+    if ( group->changed != 0 ) {
+        printMeans ( group );
     }
     fprintf ( stderr, "==================== distributeMeans finish ==================== \n");
 #endif
 }
 
-void updateMeans ( cluster_t * cluster ) {
+void updateMeans ( group_t * group ) {
 #ifdef DEBUG
     fprintf ( stderr, "==================== updateMeans begin ==================== \n");
 #endif
     unsigned int newmean = 0;
     bucket_t * bucket;
-    for ( int i = 0; i < cluster->size; i++ ) {
-        if ( cluster->kmeans[i].fillcount == 0 ) continue;
-        bucket = cluster->kmeans[i].bucket;
+    for ( int i = 0; i < group->size; i++ ) {
+        if ( group->cluster[i].fillcount == 0 ) continue;
+        bucket = group->cluster[i].bucket;
         while ( bucket != NULL && bucket->value != 0 ) {
             newmean += bucket->value;
             bucket = bucket->next;
         }
-        cluster->kmeans[i].mean = newmean / ( cluster->kmeans[i].fillcount );
+        group->cluster[i].mean = newmean / ( group->cluster[i].fillcount );
         newmean = 0;
     }
 #ifdef DEBUG
@@ -241,39 +241,39 @@ void updateMeans ( cluster_t * cluster ) {
 #endif
 }
 
-void updateCluster ( cluster_t * cluster ) {
+void updateGroup ( group_t * group ) {
     do {
-        cluster->changed = 0;
+        group->changed = 0;
 #ifdef DEBUG
     fprintf ( stderr, "updateMeans\n" );
 #endif
-        updateMeans ( cluster );
+        updateMeans ( group );
 #ifdef DEBUG
     fprintf ( stderr, "distributeMeans\n" );
 #endif
-        distributeMeans ( cluster );
-    } while ( cluster->changed != 0 );
+        distributeMeans ( group );
+    } while ( group->changed != 0 );
 
-    int compMeans ( const void *kmeansl, const void *kmeansr ) {
-        return ((kmeans_t *)kmeansl)->mean > ((kmeans_t *)kmeansr)->mean;
+    int compMeans ( const void *clusterl, const void *clusterr ) {
+        return ((cluster_t *)clusterl)->mean > ((cluster_t *)clusterr)->mean;
     }
 
 #ifdef DEBUG
     fprintf ( stderr, "qsort\n" );
 #endif
-    qsort ( cluster->kmeans, cluster->size, sizeof ( kmeans_t ), compMeans );
+    qsort ( group->cluster, group->size, sizeof ( cluster_t ), compMeans );
 }
 
-void printMeans ( cluster_t * cluster ) {
+void printMeans ( group_t * group ) {
     bucket_t * bucket;
 
-    for ( int i = 0; i < cluster->size; i++ ) {
-        // fprintf ( stderr, "address: %u\t", &cluster->kmeans[i] );
-        fprintf ( stderr, "cluster: %u\t", i );
-        fprintf ( stderr, "mean: %u\t", cluster->kmeans[i].mean );
-        fprintf ( stderr, "fillcount: %u\n", cluster->kmeans[i].fillcount );
+    for ( int i = 0; i < group->size; i++ ) {
+        // fprintf ( stderr, "address: %u\t", &group->cluster[i] );
+        fprintf ( stderr, "group: %u\t", i );
+        fprintf ( stderr, "mean: %u\t", group->cluster[i].mean );
+        fprintf ( stderr, "fillcount: %u\n", group->cluster[i].fillcount );
 
-        bucket = cluster->kmeans[i].bucket;
+        bucket = group->cluster[i].bucket;
 
         int sum = 0, count = 0;
         while ( bucket != NULL ) {
@@ -282,8 +282,8 @@ void printMeans ( cluster_t * cluster ) {
             bucket = bucket->next;
         }
         /*
-        for ( int j = 0; j < cluster->kmeans[i].fillcount % BUCKETSIZE; j++ ) {
-            fprintf ( stderr, "%u ", cluster->kmeans[i].values[j] );
+        for ( int j = 0; j < group->cluster[i].fillcount % BUCKETSIZE; j++ ) {
+            fprintf ( stderr, "%u ", group->cluster[i].values[j] );
         }
         */
         fprintf ( stderr, "\ncalculated mean is: %f\n\n", sum / (double)count );
