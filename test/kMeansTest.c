@@ -11,7 +11,7 @@ void readMeans ( void (*func )( unsigned int * ), char * fileName );
 int main ( int argc, char ** argv ) {
 
     cluster_t cluster;
-    makeCluster ( &cluster, CLUSTERSIZE, argv[1] );
+    makeCluster ( &cluster, strtol ( argv[1], NULL, 10 ), argv[2] );
 
     printMeans ( &cluster );
     finalizeCluster ( &cluster );
