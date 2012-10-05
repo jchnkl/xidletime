@@ -28,9 +28,11 @@ int main ( int argc, char ** argv ) {
       , nwIdleTime = myIdleTime
       ;
 
+    char clusterFile = argv[1];
+
     int clustersize = 100;
     cluster_t cluster;
-    makeCluster ( &cluster, clustersize, "./idletest.dat" );
+    makeCluster ( &cluster, clustersize, clusterFile );
 
     for ( int k = 0; k < clustersize; k++ ) {
         cluster.kmeans[k].mean = myIdleTime * k / (double)clustersize;
@@ -109,6 +111,10 @@ int main ( int argc, char ** argv ) {
                     unsigned int time = alarmEvent->time - lastEventTime;
 
                     int    class = addValue ( &cluster, &time ) + 1;
+
+                    FILE * stream = fopen ( clusterFile, "a" );
+                    fwrite ( value, sizeof ( unsigned int ), 1, stream );
+                    fclose ( stream );
 
                     if ( class < 50 ) {
                         // bc:
