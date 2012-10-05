@@ -28,14 +28,14 @@ int main ( int argc, char ** argv ) {
       , nwIdleTime = myIdleTime
       ;
 
-    char clusterFile = argv[1];
+    char groupFile = argv[1];
 
-    int clustersize = 100;
-    cluster_t cluster;
-    makeCluster ( &cluster, clustersize, clusterFile );
+    int groupsize = 100;
+    group_t group;
+    makeGroup ( &group, groupsize, groupFile );
 
-    for ( int k = 0; k < clustersize; k++ ) {
-        cluster.kmeans[k].mean = myIdleTime * k / (double)clustersize;
+    for ( int k = 0; k < groupsize; k++ ) {
+        group.cluster[k].mean = myIdleTime * k / (double)groupsize;
     }
 
     XEvent xEvent;
@@ -110,9 +110,9 @@ int main ( int argc, char ** argv ) {
 
                     unsigned int time = alarmEvent->time - lastEventTime;
 
-                    int    class = addValue ( &cluster, &time ) + 1;
+                    int    class = addValue ( &group, &time ) + 1;
 
-                    FILE * stream = fopen ( clusterFile, "a" );
+                    FILE * stream = fopen ( groupFile, "a" );
                     fwrite ( value, sizeof ( unsigned int ), 1, stream );
                     fclose ( stream );
 
@@ -154,8 +154,8 @@ int main ( int argc, char ** argv ) {
                     }
 
                     int valueCount = 0;
-                    for ( int c = 0; c < cluster.size; c++ ) {
-                        valueCount += cluster.kmeans[c].fillcount;
+                    for ( int c = 0; c < group.size; c++ ) {
+                        valueCount += group.cluster[c].fillcount;
                     }
 
                     char tmp[32];
@@ -164,7 +164,7 @@ int main ( int argc, char ** argv ) {
                              // , " %i / %i = %.2f (%i) (%i)"
                              , " %i; %i; %i"
                              , class
-                             // , clustersize
+                             // , groupsize
                              // , prob
                              , nwIdleTime / 1000
                              , valueCount
@@ -176,9 +176,9 @@ int main ( int argc, char ** argv ) {
                             , "added %u to class %i; probabilty: %f\n"
                             , time
                             , class
-                            , (double)class / (double)clustersize
+                            , (double)class / (double)groupsize
                             );
-                    printMeans ( &cluster );
+                    printMeans ( &group );
                     */
 
                 }
@@ -222,7 +222,7 @@ int main ( int argc, char ** argv ) {
 
     }
 
-    finalizeCluster ( &cluster );
+    finalizeGroup ( &group );
 
     return 0;
 
