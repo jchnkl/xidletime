@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <sys/ioctl.h>
 
 int makeGroup ( group_t * group, unsigned int size, const char * path ) {
 
@@ -288,25 +289,57 @@ void printGroup ( group_t * group ) {
     int i;
     bucket_t * bucket;
 
+    struct winsize ws;
+    ioctl ( 0, TIOCGWINSZ, &ws );
+
     for ( i = 0; i < group->size; i++ ) {
         // fprintf ( stderr, "address: %u\t", &group->cluster[i] );
         fprintf ( stderr, "group: %u\t", i );
         fprintf ( stderr, "mean: %u\t", group->cluster[i].mean );
         fprintf ( stderr, "fillcount: %u\n", group->cluster[i].fillcount );
 
+        if ( group->cluster[i].fillcount == 0 ) continue;
+
         bucket = group->cluster[i].bucket;
 
+        unsigned int max = 0;
+        while ( bucket != NULL ) {
+            if ( bucket->value > max ) max = bucket->value;
+            bucket = bucket->next;
+        }
+
+        unsigned int maxlen = 0;
+        while ( max > 0 ) {
+            maxlen++; max /= 10;
+        }
+        maxlen += 1;
+
+        int printed = 0;
+        bucket = group->cluster[i].bucket;
+        while ( bucket != NULL ) {
+            if ( printed >= ws.ws_col - maxlen ) {
+                fprintf ( stdout, "\n" );
+                printed = 0;
+            }
+            printed += fprintf ( stdout, "%-*u ", maxlen, bucket->value );
+            bucket = bucket->next;
+        }
+        fprintf ( stdout, "\n\n" );
+
+        /*
         int sum = 0, count = 0;
         while ( bucket != NULL ) {
             fprintf ( stderr, "%u ", bucket->value );
             count++; sum+= bucket->value;
             bucket = bucket->next;
         }
+        */
+
         /*
         for ( int j = 0; j < group->cluster[i].fillcount % BUCKETSIZE; j++ ) {
             fprintf ( stderr, "%u ", group->cluster[i].values[j] );
         }
         */
-        fprintf ( stderr, "\ncalculated mean is: %f\n\n", sum / (double)count );
+        // fprintf ( stderr, "\ncalculated mean is: %f\n\n", sum / (double)count );
     }
 }
