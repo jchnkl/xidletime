@@ -284,7 +284,7 @@ void updateGroup ( group_t * group ) {
     qsort ( group->cluster, group->size, sizeof ( cluster_t ), compMeans );
 }
 
-void printMeans ( group_t * group ) {
+void printGroup ( group_t * group ) {
     int i;
     bucket_t * bucket;
 
