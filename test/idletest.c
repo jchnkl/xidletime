@@ -42,16 +42,24 @@ int main ( int argc, char ** argv ) {
       , nwIdleTime = myIdleTime
       ;
 
-    group_t groups[1];
-    const char * groupFiles[1];
-    groupFiles[0] = argv[1]; // idleFile
 
+    const char * groupFiles[2];
+    groupFiles[0] = argv[2]; // idleFile
+    groupFiles[1] = argv[3]; // timeoutFile
+
+    group_t groups[2];
     int idleGroupSize = 100;
-
     makeGroup ( &groups[0], idleGroupSize, groupFiles[0] );
 
     for ( k = 0; k < idleGroupSize; k++ ) {
         groups[0].cluster[k].mean = myIdleTime * k / (double)idleGroupSize;
+    }
+
+    int timeoutGroupSize = 10;
+    makeGroup ( &groups[1], timeoutGroupSize, groupFiles[1] );
+
+    for ( k = 0; k < timeoutGroupSize; k++ ) {
+        groups[1].cluster[k].mean = myIdleTime * k / (double)timeoutGroupSize;
     }
 
     XEvent xEvent;
@@ -138,8 +146,18 @@ int main ( int argc, char ** argv ) {
                         //  r = 1 + sqrt ( ( i - 50 ) * 2 / 100 );
                         //  print i, ": ", r, "\n";
                         // }
-                        int newtime = nwIdleTime * ( 1.0 + sqrt ( ( 50 - class ) * 2.0 / 100.0 ) );
-                        if ( newtime >= myIdleTime ) nwIdleTime = newtime;
+                        unsigned int newtime = nwIdleTime * ( 1.0 + sqrt ( ( 50 - class ) * 2.0 / 100.0 ) );
+                        if ( newtime >= myIdleTime ) {
+
+                            nwIdleTime = newtime;
+
+                            addValue ( &groups[1], &newtime );
+
+                            FILE * stream = fopen ( groupFiles[1], "a" );
+                            fwrite ( value, sizeof ( unsigned int ), 1, stream );
+                            fclose ( stream );
+                        }
+
                         char tmp[16];
                         snprintf ( tmp
                                  , 16
@@ -153,8 +171,18 @@ int main ( int argc, char ** argv ) {
                         // r = 1 + sqrt ( ( 50 - i ) * 2 / 100 );
                         // print i, ": ", r, "\n";
                         // }
-                        int newtime = nwIdleTime / ( 1.0 + sqrt ( ( class - 50 ) * 2.0 / 100.0 ) );
-                        if ( newtime >= myIdleTime ) nwIdleTime = newtime;
+                        unsigned int newtime = nwIdleTime / ( 1.0 + sqrt ( ( class - 50 ) * 2.0 / 100.0 ) );
+                        if ( newtime >= myIdleTime ) {
+
+                            nwIdleTime = newtime;
+
+                            addValue ( &groups[1], &newtime );
+
+                            FILE * stream = fopen ( groupFiles[1], "a" );
+                            fwrite ( value, sizeof ( unsigned int ), 1, stream );
+                            fclose ( stream );
+                        }
+
                         char tmp[16];
                         snprintf ( tmp
                                  , 16
@@ -240,6 +268,9 @@ int main ( int argc, char ** argv ) {
 
     dumpGroup ( &groups[0], groupFiles[0] );
     finalizeGroup ( &groups[0] );
+
+    dumpGroup ( &groups[1], groupFiles[1] );
+    finalizeGroup ( &groups[1] );
 
     return 0;
 
