@@ -42,8 +42,7 @@ int main ( int argc, char ** argv ) {
       , nwIdleTime = myIdleTime
       ;
 
-
-    group_t group;
+    group_t groups[1];
     const char * groupFiles[1];
     groupFiles[0] = argv[1]; // idleFile
 
@@ -52,7 +51,7 @@ int main ( int argc, char ** argv ) {
     makeGroup ( &groups[0], idleGroupSize, groupFiles[0] );
 
     for ( k = 0; k < idleGroupSize; k++ ) {
-        group.cluster[k].mean = myIdleTime * k / (double)idleGroupSize;
+        groups[0].cluster[k].mean = myIdleTime * k / (double)idleGroupSize;
     }
 
     XEvent xEvent;
@@ -127,7 +126,7 @@ int main ( int argc, char ** argv ) {
 
                     unsigned int time = alarmEvent->time - lastEventTime;
 
-                    int    class = addValue ( &group, &time ) + 1;
+                    int    class = addValue ( &groups[0], &time ) + 1;
 
                     FILE * stream = fopen ( groupFiles[0], "a" );
                     fwrite ( value, sizeof ( unsigned int ), 1, stream );
@@ -171,8 +170,8 @@ int main ( int argc, char ** argv ) {
                     }
 
                     int valueCount = 0;
-                    for ( int c = 0; c < group.size; c++ ) {
-                        valueCount += group.cluster[c].fillcount;
+                    for ( k = 0; k < groups[0].size; k++ ) {
+                        valueCount += groups[0].cluster[k].fillcount;
                     }
 
                     char tmp[32];
@@ -195,7 +194,7 @@ int main ( int argc, char ** argv ) {
                             , class
                             , (double)class / (double)groupsize
                             );
-                    printMeans ( &group );
+                    printMeans ( &groups[0] );
                     */
 
                 }
@@ -239,8 +238,8 @@ int main ( int argc, char ** argv ) {
 
     }
 
-    dumpGroup ( &group, groupFiles[0] );
-    finalizeGroup ( &group );
+    dumpGroup ( &groups[0], groupFiles[0] );
+    finalizeGroup ( &groups[0] );
 
     return 0;
 
