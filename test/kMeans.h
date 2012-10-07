@@ -40,7 +40,7 @@ void updateMeans ( group_t * group );
 
 void updateGroup ( group_t * group );
 
-void printMeans ( group_t * group );
+void printGroup ( group_t * group );
 
 
 #endif
