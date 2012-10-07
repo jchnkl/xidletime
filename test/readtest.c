@@ -81,7 +81,7 @@ int main ( int argc, char ** argv ) {
 
     int printed = 0;
     for ( int i = 0; i < len / sizeof ( unsigned int ); i++ ) {
-        if ( printed > ws.ws_col - maxlen ) {
+        if ( printed >= ws.ws_col - maxlen ) {
             fprintf ( stdout, "\n" );
             printed = 0;
         }
