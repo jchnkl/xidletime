@@ -34,6 +34,7 @@ int main ( int argc, char ** argv ) {
                         ;
 
     int i = 0
+      , k = 0
       , major = 0, minor = 0
       , ev_base = 0, err_base = 0
       , numCounter = 0
@@ -42,14 +43,16 @@ int main ( int argc, char ** argv ) {
       ;
 
 
-    int groupsize = 100;
     group_t group;
     const char * groupFiles[1];
     groupFiles[0] = argv[1]; // idleFile
 
-    makeGroup ( &group, groupsize, groupFiles[0] );
-    for ( int k = 0; k < groupsize; k++ ) {
-        group.cluster[k].mean = myIdleTime * k / (double)groupsize;
+    int idleGroupSize = 100;
+
+    makeGroup ( &groups[0], idleGroupSize, groupFiles[0] );
+
+    for ( k = 0; k < idleGroupSize; k++ ) {
+        group.cluster[k].mean = myIdleTime * k / (double)idleGroupSize;
     }
 
     XEvent xEvent;
