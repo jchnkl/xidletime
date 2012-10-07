@@ -107,6 +107,21 @@ int finalizeGroup ( group_t * group ) {
     return 0;
 }
 
+void dumpGroup ( group_t * group, const char * groupFile ) {
+    int i;
+    FILE * stream = fopen ( group->path, "w+" );
+
+    for ( i = 0; i < group->size; i++ ) {
+        bucket_t * bucket = group->cluster[i].bucket;
+        while ( bucket != NULL ) {
+            fwrite ( &(bucket->value), sizeof ( unsigned int ), 1, stream );
+            bucket = bucket->next;
+        }
+    }
+
+    fclose ( stream );
+}
+
 int minDistance ( group_t * group, unsigned int * value ) {
     int i, idx = 0, gdist = 0x7fffffff;
     for ( i = 0; i < group->size; i++ ) {

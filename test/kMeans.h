@@ -24,6 +24,8 @@ int makeGroup ( group_t * group, unsigned int size, const char * path );
 
 int finalizeGroup ( group_t * group );
 
+void dumpGroup ( group_t * group, const char * groupFile );
+
 int minDistance ( group_t * group, unsigned int * value );
 
 void addKMeanValue ( group_t * group, int * idx, unsigned int * value );
