@@ -3,13 +3,26 @@
 #include <string.h>
 #include <math.h>
 
+#include <signal.h>
+
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
 #include "kMeans.h"
 
+typedef struct sigData
+    { int ngroups
+    ; group_t * groups
+    ; const char ** groupFiles
+    ;
+    } sigData;
+
+sigData globalSigData;
+
 long XSyncValueToLong ( XSyncValue *value );
+
+static void sigHandler ( int sig, siginfo_t * siginfo, void * context );
 
 int main ( int argc, char ** argv ) {
 
@@ -232,4 +245,26 @@ long XSyncValueToLong ( XSyncValue *value ) {
     return ( (long) XSyncValueHigh32 ( *value ) << 32
             | XSyncValueLow32 ( *value )
            );
+}
+
+static void sigHandler ( int sig, siginfo_t * siginfo, void * context ) {
+    int g;
+
+    fprintf ( stderr, "Caught signal %d\n", sig );
+
+    switch (sig) {
+        case SIGUSR1:
+            for ( g = 0; g < globalSigData.ngroups; g++ ) {
+                printGroup ( &(globalSigData.groups[g]) );
+            }
+            break;
+
+        default:
+            for ( g = 0; g < globalSigData.ngroups; g++ ) {
+                dumpGroup ( &(globalSigData.groups[g])
+                          ,   globalSigData.groupFiles[g]
+                          );
+            }
+            exit ( EXIT_SUCCESS );
+    }
 }
