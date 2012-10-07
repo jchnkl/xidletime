@@ -7,6 +7,7 @@
 
 int makeGroup ( group_t * group, unsigned int size, const char * path ) {
 
+    unsigned int   i;
     long           length;
     size_t         tsize  = sizeof ( unsigned int );
     FILE         * stream;
@@ -44,7 +45,7 @@ int makeGroup ( group_t * group, unsigned int size, const char * path ) {
 #ifdef DEBUG
         fprintf ( stderr, "values: " );
 #endif
-        for ( unsigned int i = 0; i < length / sizeof ( unsigned int ); i++ ) {
+        for ( i = 0; i < length / sizeof ( unsigned int ); i++ ) {
 #ifdef DEBUG
             fprintf ( stderr, "%i ", values[i] );
 #endif
@@ -68,6 +69,7 @@ int makeGroup ( group_t * group, unsigned int size, const char * path ) {
 }
 
 int finalizeGroup ( group_t * group ) {
+    int i;
     FILE * stream = NULL;
 
     if ( group->path != NULL ) {
@@ -77,7 +79,7 @@ int finalizeGroup ( group_t * group ) {
         // stream = fopen ( group->path, "w+" );
     }
 
-    for ( int i = 0; i < group->size; i++ ) {
+    for ( i = 0; i < group->size; i++ ) {
         bucket_t * bucket = group->cluster[i].bucket;
         while ( bucket != NULL ) {
             if ( stream != NULL ) {
@@ -106,8 +108,8 @@ int finalizeGroup ( group_t * group ) {
 }
 
 int minDistance ( group_t * group, unsigned int * value ) {
-    int idx = 0, gdist = 0x7fffffff;
-    for ( int i = 0; i < group->size; i++ ) {
+    int i, idx = 0, gdist = 0x7fffffff;
+    for ( i = 0; i < group->size; i++ ) {
         int ldist = abs ( * value - group->cluster[i].mean );
         if ( ldist < gdist ) { gdist = ldist; idx = i; }
     }
@@ -129,7 +131,8 @@ void addKMeanValue ( group_t * group, int * idx, unsigned int * value ) {
 }
 
 int findValue ( group_t * group, unsigned int * value ) {
-    for ( int i = 0; i < group->size; i++ ) {
+    int i;
+    for ( i = 0; i < group->size; i++ ) {
         bucket_t * bucket = group->cluster[i].bucket;
         while ( bucket != NULL ) {
             if ( bucket->value == *value ) return i;
@@ -163,10 +166,11 @@ int addValue ( group_t * group, unsigned int * value ) {
 }
 
 void distributeMeans ( group_t * group ) {
+    int i = 0;
 #ifdef DEBUG
     fprintf ( stderr, "==================== distributeMeans begin ==================== \n");
 #endif
-    for ( int i = 0; i < group->size; i++ ) {
+    for ( i = 0; i < group->size; i++ ) {
 
         if ( group->cluster[i].bucket == NULL ) continue;
 
@@ -224,9 +228,10 @@ void updateMeans ( group_t * group ) {
 #ifdef DEBUG
     fprintf ( stderr, "==================== updateMeans begin ==================== \n");
 #endif
+    int i;
     unsigned int newmean = 0;
     bucket_t * bucket;
-    for ( int i = 0; i < group->size; i++ ) {
+    for ( i = 0; i < group->size; i++ ) {
         if ( group->cluster[i].fillcount == 0 ) continue;
         bucket = group->cluster[i].bucket;
         while ( bucket != NULL && bucket->value != 0 ) {
@@ -265,9 +270,10 @@ void updateGroup ( group_t * group ) {
 }
 
 void printMeans ( group_t * group ) {
+    int i;
     bucket_t * bucket;
 
-    for ( int i = 0; i < group->size; i++ ) {
+    for ( i = 0; i < group->size; i++ ) {
         // fprintf ( stderr, "address: %u\t", &group->cluster[i] );
         fprintf ( stderr, "group: %u\t", i );
         fprintf ( stderr, "mean: %u\t", group->cluster[i].mean );
