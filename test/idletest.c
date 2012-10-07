@@ -41,12 +41,13 @@ int main ( int argc, char ** argv ) {
       , nwIdleTime = myIdleTime
       ;
 
-    char * groupFile = argv[1];
 
     int groupsize = 100;
     group_t group;
-    makeGroup ( &group, groupsize, groupFile );
+    const char * groupFiles[1];
+    groupFiles[0] = argv[1]; // idleFile
 
+    makeGroup ( &group, groupsize, groupFiles[0] );
     for ( int k = 0; k < groupsize; k++ ) {
         group.cluster[k].mean = myIdleTime * k / (double)groupsize;
     }
@@ -125,7 +126,7 @@ int main ( int argc, char ** argv ) {
 
                     int    class = addValue ( &group, &time ) + 1;
 
-                    FILE * stream = fopen ( groupFile, "a" );
+                    FILE * stream = fopen ( groupFiles[0], "a" );
                     fwrite ( value, sizeof ( unsigned int ), 1, stream );
                     fclose ( stream );
 
@@ -235,6 +236,7 @@ int main ( int argc, char ** argv ) {
 
     }
 
+    dumpGroup ( &group, groupFiles[0] );
     finalizeGroup ( &group );
 
     return 0;
