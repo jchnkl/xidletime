@@ -42,6 +42,13 @@ int main ( int argc, char ** argv ) {
       , nwIdleTime = myIdleTime
       ;
 
+    struct sigaction sa;
+    memset ( &sa, 0, sizeof ( struct sigaction ) );
+    sa.sa_flags     = SA_SIGINFO;
+    sa.sa_sigaction = sigHandler;
+    sigaction ( SIGINT,  &sa, NULL );
+    sigaction ( SIGTERM, &sa, NULL );
+    sigaction ( SIGUSR1, &sa, NULL );
 
     const char * groupFiles[2];
     groupFiles[0] = argv[2]; // idleFile
@@ -61,6 +68,11 @@ int main ( int argc, char ** argv ) {
     for ( k = 0; k < timeoutGroupSize; k++ ) {
         groups[1].cluster[k].mean = myIdleTime * k / (double)timeoutGroupSize;
     }
+
+    memset ( &globalSigData, 0, sizeof ( sigData ) );
+    globalSigData.ngroups = 2;
+    globalSigData.groups = groups;
+    globalSigData.groupFiles = groupFiles;
 
     XEvent xEvent;
     Time lastEventTime = 0;
