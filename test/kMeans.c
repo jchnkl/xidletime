@@ -6,6 +6,23 @@
 #include <math.h>
 #include <sys/ioctl.h>
 
+typedef int (* cmp_fun_t) ( const void * a, const void * b);
+
+static
+int compMean ( const void *clusterl, const void *clusterr ) {
+    return ((cluster_t *)clusterl)->mean > ((cluster_t *)clusterr)->mean;
+}
+
+static
+int compFill ( const void *clusterl, const void *clusterr ) {
+    return ((cluster_t *)clusterl)->fillcount > ((cluster_t *)clusterr)->fillcount;
+}
+
+cmp_fun_t cmp_fun[] =
+    { compMean
+    , compFill
+    };
+
 int makeGroup ( group_t * group, unsigned int size, const char * path ) {
 
     unsigned int   i;
@@ -275,14 +292,14 @@ void updateGroup ( group_t * group ) {
         distributeMeans ( group );
     } while ( group->changed != 0 );
 
-    int compMeans ( const void *clusterl, const void *clusterr ) {
-        return ((cluster_t *)clusterl)->mean > ((cluster_t *)clusterr)->mean;
-    }
-
 #ifdef DEBUG
     fprintf ( stderr, "qsort\n" );
 #endif
-    qsort ( group->cluster, group->size, sizeof ( cluster_t ), compMeans );
+    qsort ( group->cluster
+          , group->size
+          , sizeof ( cluster_t )
+          , cmp_fun[group->cmp_type]
+          );
 }
 
 void printGroup ( group_t * group ) {
