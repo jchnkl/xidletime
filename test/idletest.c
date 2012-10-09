@@ -152,7 +152,7 @@ int main ( int argc, char ** argv ) {
                     class[0] = addValue ( &groups[0], &time ) + 1;
 
                     FILE * stream = fopen ( groupFiles[0], "a" );
-                    fwrite ( value, sizeof ( unsigned int ), 1, stream );
+                    fwrite ( &time, sizeof ( unsigned int ), 1, stream );
                     fclose ( stream );
 
                     if ( class[0] < 50 ) {
@@ -170,7 +170,7 @@ int main ( int argc, char ** argv ) {
                             class[1] = addValue ( &groups[1], &newtime );
 
                             FILE * stream = fopen ( groupFiles[1], "a" );
-                            fwrite ( value, sizeof ( unsigned int ), 1, stream );
+                            fwrite ( &newtime, sizeof ( unsigned int ), 1, stream );
                             fclose ( stream );
                         }
 
@@ -197,7 +197,7 @@ int main ( int argc, char ** argv ) {
                             class[1] = addValue ( &groups[1], &newtime );
 
                             FILE * stream = fopen ( groupFiles[1], "a" );
-                            fwrite ( value, sizeof ( unsigned int ), 1, stream );
+                            fwrite ( &newtime, sizeof ( unsigned int ), 1, stream );
                             fclose ( stream );
                         }
 
