@@ -64,6 +64,7 @@ int main ( int argc, char ** argv ) {
 
     int timeoutGroupSize = 10;
     makeGroup ( &groups[1], timeoutGroupSize, groupFiles[1] );
+    groups[1].cmp_type = FILL;
 
     for ( k = 0; k < timeoutGroupSize; k++ ) {
         groups[1].cluster[k].mean = myIdleTime * k / (double)timeoutGroupSize;
@@ -122,7 +123,7 @@ int main ( int argc, char ** argv ) {
     alarm[0] = XSyncCreateAlarm ( dpy, flags, &attributes[0] );
     alarm[1] = XSyncCreateAlarm ( dpy, flags, &attributes[1] );
 
-    char buf[64];
+    char buf[256];
 
     while ( 1 ) {
         memset ( buf, 0, 63 );
@@ -146,35 +147,39 @@ int main ( int argc, char ** argv ) {
 
                     unsigned int time = alarmEvent->time - lastEventTime;
 
-                    int    class = addValue ( &groups[0], &time ) + 1;
+                    int class[2];
+
+                    class[0] = addValue ( &groups[0], &time ) + 1;
 
                     FILE * stream = fopen ( groupFiles[0], "a" );
                     fwrite ( value, sizeof ( unsigned int ), 1, stream );
                     fclose ( stream );
 
-                    if ( class < 50 ) {
+                    if ( class[0] < 50 ) {
                         // bc:
                         // for (i=50; i<=100; i=i+5) {
                         //  r = 1 + sqrt ( ( i - 50 ) * 2 / 100 );
                         //  print i, ": ", r, "\n";
                         // }
-                        unsigned int newtime = nwIdleTime * ( 1.0 + sqrt ( ( 50 - class ) * 2.0 / 100.0 ) );
+                        unsigned int newtime = nwIdleTime * ( 1.0 + sqrt ( ( 50 - class[0] ) * 2.0 / 100.0 ) );
+
                         if ( newtime >= myIdleTime ) {
 
                             nwIdleTime = newtime;
 
-                            addValue ( &groups[1], &newtime );
+                            class[1] = addValue ( &groups[1], &newtime );
 
                             FILE * stream = fopen ( groupFiles[1], "a" );
                             fwrite ( value, sizeof ( unsigned int ), 1, stream );
                             fclose ( stream );
                         }
 
-                        char tmp[16];
+                        char tmp[32];
                         snprintf ( tmp
-                                 , 16
-                                 , " [p<50: %.2f]"
-                                 , ( 1.0 + sqrt ( ( 50 - class ) * 2.0 / 100.0 ) )
+                                 , 32
+                                 , " [p<50: %i/100 = %.2f]"
+                                 , class[0]
+                                 , ( 1.0 + sqrt ( ( 50 - class[0] ) * 2.0 / 100.0 ) )
                                  );
                         strcat ( buf, tmp );
                     } else {
@@ -183,23 +188,25 @@ int main ( int argc, char ** argv ) {
                         // r = 1 + sqrt ( ( 50 - i ) * 2 / 100 );
                         // print i, ": ", r, "\n";
                         // }
-                        unsigned int newtime = nwIdleTime / ( 1.0 + sqrt ( ( class - 50 ) * 2.0 / 100.0 ) );
+                        unsigned int newtime = nwIdleTime / ( 1.0 + sqrt ( ( class[0] - 50 ) * 2.0 / 100.0 ) );
+
                         if ( newtime >= myIdleTime ) {
 
                             nwIdleTime = newtime;
 
-                            addValue ( &groups[1], &newtime );
+                            class[1] = addValue ( &groups[1], &newtime );
 
                             FILE * stream = fopen ( groupFiles[1], "a" );
                             fwrite ( value, sizeof ( unsigned int ), 1, stream );
                             fclose ( stream );
                         }
 
-                        char tmp[16];
+                        char tmp[32];
                         snprintf ( tmp
-                                 , 16
-                                 , " [p>50: %.2f]"
-                                 , ( 1.0 + sqrt ( ( class - 50 ) * 2.0 / 100.0 ) )
+                                 , 32
+                                 , " [p>50: %i/100 = %.2f]"
+                                 , class[0]
+                                 , ( 1.0 + sqrt ( ( class[0] - 50 ) * 2.0 / 100.0 ) )
                                  );
                         strcat ( buf, tmp );
                     }
@@ -214,25 +221,24 @@ int main ( int argc, char ** argv ) {
                         valueCount += groups[0].cluster[k].fillcount;
                     }
 
-                    char tmp[32];
+                    char tmp[64];
                     snprintf ( tmp
-                             , 32
+                             , 64
                              // , " %i / %i = %.2f (%i) (%i)"
-                             , " %i; %i; %i"
-                             , class
+                             , " new timeout: %-i; timeout class: %-i"
                              // , groupsize
                              // , prob
                              , nwIdleTime / 1000
-                             , valueCount
+                             , class[1]
                              );
                     strcat ( buf, tmp );
 
                     /*
                     fprintf ( stderr
-                            , "added %u to class %i; probabilty: %f\n"
+                            , "added %u to class[0] %i; probabilty: %f\n"
                             , time
-                            , class
-                            , (double)class / (double)groupsize
+                            , class[0]
+                            , (double)class[0] / (double)groupsize
                             );
                     printMeans ( &groups[0] );
                     */
