@@ -145,9 +145,9 @@ int main ( int argc, char ** argv ) {
                 if ( lastEventTime != 0 && lastEventTime < alarmEvent->time ) {
 
 
-                    unsigned int time = alarmEvent->time - lastEventTime;
-
                     int class[2];
+                    unsigned int newtime = 0;
+                    unsigned int time = alarmEvent->time - lastEventTime;
 
                     class[0] = addValue ( &groups[0], &time ) + 1;
 
@@ -161,11 +161,13 @@ int main ( int argc, char ** argv ) {
                         //  r = 1 + sqrt ( ( i - 50 ) * 2 / 100 );
                         //  print i, ": ", r, "\n";
                         // }
-                        unsigned int newtime = nwIdleTime * ( 1.0 + sqrt ( ( 50 - class[0] ) * 2.0 / 100.0 ) );
+                        newtime = nwIdleTime * ( 1.0 + sqrt ( ( 50 - class[0] ) * 2.0 / 100.0 ) );
 
+                        /*
                         if ( newtime >= myIdleTime ) {
 
                             nwIdleTime = newtime;
+                        }
 
                             class[1] = addValue ( &groups[1], &newtime );
 
@@ -173,6 +175,7 @@ int main ( int argc, char ** argv ) {
                             fwrite ( &newtime, sizeof ( unsigned int ), 1, stream );
                             fclose ( stream );
                         }
+                        */
 
                         char tmp[32];
                         snprintf ( tmp
@@ -188,11 +191,13 @@ int main ( int argc, char ** argv ) {
                         // r = 1 + sqrt ( ( 50 - i ) * 2 / 100 );
                         // print i, ": ", r, "\n";
                         // }
-                        unsigned int newtime = nwIdleTime / ( 1.0 + sqrt ( ( class[0] - 50 ) * 2.0 / 100.0 ) );
+                        newtime = nwIdleTime / ( 1.0 + sqrt ( ( class[0] - 50 ) * 2.0 / 100.0 ) );
 
+                        /*
                         if ( newtime >= myIdleTime ) {
 
                             nwIdleTime = newtime;
+                        }
 
                             class[1] = addValue ( &groups[1], &newtime );
 
@@ -200,6 +205,7 @@ int main ( int argc, char ** argv ) {
                             fwrite ( &newtime, sizeof ( unsigned int ), 1, stream );
                             fclose ( stream );
                         }
+                        */
 
                         char tmp[32];
                         snprintf ( tmp
@@ -211,8 +217,17 @@ int main ( int argc, char ** argv ) {
                         strcat ( buf, tmp );
                     }
 
-                    if ( nwIdleTime >= myIdleTime ) {
-                        XSyncIntToValue ( &value[1], nwIdleTime );
+                    // if ( nwIdleTime >= myIdleTime ) {
+                    if ( newtime >= myIdleTime ) {
+                        nwIdleTime = newtime;
+
+                        class[1] = addValue ( &groups[1], &newtime );
+
+                        FILE * stream = fopen ( groupFiles[1], "a" );
+                        fwrite ( &newtime, sizeof ( unsigned int ), 1, stream );
+                        fclose ( stream );
+
+                        XSyncIntToValue ( &value[1], newtime );
                         attributes[0].trigger.wait_value = value[1];
                     }
 
