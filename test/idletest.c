@@ -256,18 +256,6 @@ int main ( int argc, char ** argv ) {
                                     , alarmEvent->alarm_value
                                     )
                ) {
-                int degrade = nwIdleTime - myIdleTime;
-
-                if ( 0 && degrade >= myIdleTime ) {
-                    nwIdleTime = degrade;
-                    XSyncIntToValue ( &value[1], degrade );
-                    attributes[0].trigger.wait_value = value[1];
-                    attributes[0].trigger.test_type = XSyncPositiveComparison;
-                    XSyncChangeAlarm ( dpy, alarm[0], flags, &attributes[0] );
-                    fprintf ( stderr, "degrading to %i\n", degrade );
-                    fprintf ( stderr, "\n" );
-                }
-
                 attributes[1].trigger.test_type = XSyncPositiveComparison;
             } else {
                 attributes[1].trigger.test_type = XSyncNegativeComparison;
