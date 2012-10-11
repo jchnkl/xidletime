@@ -130,6 +130,10 @@ int main ( int argc, char ** argv ) {
 
     char buf[256];
 
+    int class[2];
+    class[0] = idleGroupSize - 1;
+    class[1] = timeoutGroupSize - 1;
+
     while ( 1 ) {
         memset ( buf, 0, 63 );
         XNextEvent ( dpy, &xEvent );
@@ -149,8 +153,6 @@ int main ( int argc, char ** argv ) {
 
                 if ( lastEventTime != 0 && lastEventTime < alarmEvent->time ) {
 
-
-                    int class[2];
                     unsigned int newtime = 0;
                     unsigned int time = alarmEvent->time - lastEventTime;
 
