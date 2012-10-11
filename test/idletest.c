@@ -163,65 +163,10 @@ int main ( int argc, char ** argv ) {
                     fclose ( stream );
 
 
-                    /*
-                    double prob = -1.0
-                                * log((2-class[1]/(double)timeoutGroupSize)*idleGroupSize)
-                                / log(base) + log(class[0]) / log(base);
-                    */
-                    // double prob = -1.0 * log((1.0+base)*idleGroupSize) / log(base) + log(class[0]) / log(base);
-                    // double prob = -1.0 * log(100) / log(base) + log(class[0]) / log(base);
 
-                    // double tc = 1.0 + class[1] / (double)timeoutGroupSize;
+
 
                     /*
-                    unsigned int maxfill = 0, maxgroup = 0;
-                    for ( i = 0; i < groups[0].size; i++ ) {
-                        if (groups[0].cluster[i].fillcount > maxfill ) {
-                            maxfill  = groups[0].cluster[i].fillcount;
-                            maxgroup = i;
-                        }
-                    }
-                    */
-
-                    /*
-                    double fact = 1.0 + sqrt ( abs ( class[0] - maxgroup ) * 2.0 / 100.0 );
-                    */
-
-                    /*
-                    fprintf ( stderr
-                            , "maxfill: %i; maxgroup: %i\n"
-                            , maxfill
-                            , maxgroup
-                            );
-                    */
-
-                    /*
-                    double fact = 1.0 + sqrt ( abs ( class[0] - 50 ) * 2.0 / 100.0 );
-
-                    groups[0].cmp_type = FILL;
-                    updateGroup ( &groups[0] );
-
-                    unsigned int maxfill = groups[0].cluster[groups[0].size - 1].fillcount;
-                    unsigned int maxmean = groups[0].cluster[groups[0].size - 1].mean;
-
-                    groups[0].cmp_type = MEAN;
-                    updateGroup ( &groups[0] );
-
-                    for ( i = 0; i < groups[0].size; i++ ) {
-                        if ( maxfill == groups[0].cluster[i].fillcount
-                          && maxmean == groups[0].cluster[i].mean
-                           )
-                            break;
-                    }
-
-                    fprintf ( stderr
-                            , "maxfill: %i; maxmean: %i; class (mean sort order): %i\n"
-                            , maxfill
-                            , maxmean
-                            , i
-                            );
-                    */
-
                     if ( class[0] < 50 ) {
                         // bc:
                         // for (i=50; i<=100; i=i+5) {
