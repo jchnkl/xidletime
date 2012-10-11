@@ -56,19 +56,24 @@ int main ( int argc, char ** argv ) {
 
     group_t groups[2];
     int idleGroupSize = 100;
-    makeGroup ( &groups[0], idleGroupSize, groupFiles[0] );
+    makeGroup ( &groups[0], idleGroupSize );
 
     for ( k = 0; k < idleGroupSize; k++ ) {
         groups[0].cluster[k].mean = myIdleTime * k / (double)idleGroupSize;
     }
 
+    seedGroup ( &groups[0], groupFiles[0] );
+    updateGroup ( &groups[0] );
+
     int timeoutGroupSize = 10;
-    makeGroup ( &groups[1], timeoutGroupSize, groupFiles[1] );
+    makeGroup ( &groups[1], timeoutGroupSize );
     groups[1].cmp_type = FILL;
 
     for ( k = 0; k < timeoutGroupSize; k++ ) {
         groups[1].cluster[k].mean = myIdleTime * k / (double)timeoutGroupSize;
     }
+
+    seedGroup ( &groups[1], groupFiles[1] );
 
     memset ( &globalSigData, 0, sizeof ( sigData ) );
     globalSigData.ngroups = 2;

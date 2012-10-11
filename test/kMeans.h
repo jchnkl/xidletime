@@ -22,7 +22,9 @@ typedef struct group_t {
     cluster_t * cluster;
 } group_t;
 
-int makeGroup ( group_t * group, unsigned int size, const char * path );
+int makeGroup ( group_t * group, unsigned int size );
+
+int seedGroup ( group_t * group, const char * path );
 
 int finalizeGroup ( group_t * group );
 

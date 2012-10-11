@@ -23,7 +23,27 @@ cmp_fun_t cmp_fun[] =
     , compFill
     };
 
-int makeGroup ( group_t * group, unsigned int size, const char * path ) {
+int makeGroup ( group_t * group, unsigned int size ) {
+
+    if ( group == NULL ) {
+        group = (group_t *) calloc ( size, sizeof ( group_t ) );
+    } else {
+        memset ( group, 0, sizeof ( group_t ) );
+    }
+
+    group->size = size;
+
+    cluster_t * cluster = (cluster_t *) calloc ( size, sizeof ( cluster_t ) );
+    group->cluster = &cluster[0];
+
+    if ( group->cluster != NULL ) {
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
+int seedGroup ( group_t * group, const char * path ) {
 
     unsigned int   i;
     long           length;
@@ -31,14 +51,7 @@ int makeGroup ( group_t * group, unsigned int size, const char * path ) {
     FILE         * stream;
     unsigned int * values;
 
-    memset ( group, 0, sizeof ( group_t ) );
-    group->size = size;
-
-    cluster_t * cluster = (cluster_t *) calloc ( size, sizeof ( cluster_t ) );
-    group->cluster = &cluster[0];
-
     if ( path != NULL ) {
-        // group->path = strdup ( path );
         group->path = path;
 #ifdef DEBUG
         fprintf ( stderr, "open: %s\n", path );
