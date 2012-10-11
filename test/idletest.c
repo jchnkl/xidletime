@@ -166,69 +166,6 @@ int main ( int argc, char ** argv ) {
 
 
 
-                    /*
-                    if ( class[0] < 50 ) {
-                        // bc:
-                        // for (i=50; i<=100; i=i+5) {
-                        //  r = 1 + sqrt ( ( i - 50 ) * 2 / 100 );
-                        //  print i, ": ", r, "\n";
-                        // }
-                        newtime = nwIdleTime * ( 1.0 + sqrt ( ( 50 - class[0] ) * 2.0 / 100.0 ) );
-
-                        /*
-                        if ( newtime >= myIdleTime ) {
-
-                            nwIdleTime = newtime;
-                        }
-
-                            class[1] = addValue ( &groups[1], &newtime );
-
-                            FILE * stream = fopen ( groupFiles[1], "a" );
-                            fwrite ( &newtime, sizeof ( unsigned int ), 1, stream );
-                            fclose ( stream );
-                        }
-                        */
-
-                        char tmp[32];
-                        snprintf ( tmp
-                                 , 32
-                                 , " [p<50: %i/100 = %.2f]"
-                                 , class[0]
-                                 , ( 1.0 + sqrt ( ( 50 - class[0] ) * 2.0 / 100.0 ) )
-                                 );
-                        strcat ( buf, tmp );
-                    } else {
-                        // bc:
-                        // for (i=50; i>=0; i=i-5) {
-                        // r = 1 + sqrt ( ( 50 - i ) * 2 / 100 );
-                        // print i, ": ", r, "\n";
-                        // }
-                        newtime = nwIdleTime / ( 1.0 + sqrt ( ( class[0] - 50 ) * 2.0 / 100.0 ) );
-
-                        /*
-                        if ( newtime >= myIdleTime ) {
-
-                            nwIdleTime = newtime;
-                        }
-
-                            class[1] = addValue ( &groups[1], &newtime );
-
-                            FILE * stream = fopen ( groupFiles[1], "a" );
-                            fwrite ( &newtime, sizeof ( unsigned int ), 1, stream );
-                            fclose ( stream );
-                        }
-                        */
-
-                        char tmp[32];
-                        snprintf ( tmp
-                                 , 32
-                                 , " [p>50: %i/100 = %.2f]"
-                                 , class[0]
-                                 , ( 1.0 + sqrt ( ( class[0] - 50 ) * 2.0 / 100.0 ) )
-                                 );
-                        strcat ( buf, tmp );
-                    }
-
                     // if ( nwIdleTime >= myIdleTime ) {
                     if ( newtime >= myIdleTime ) {
                         nwIdleTime = newtime;
@@ -243,10 +180,6 @@ int main ( int argc, char ** argv ) {
                         attributes[0].trigger.wait_value = value[1];
                     }
 
-                    int valueCount = 0;
-                    for ( k = 0; k < groups[0].size; k++ ) {
-                        valueCount += groups[0].cluster[k].fillcount;
-                    }
 
                     char tmp[64];
                     snprintf ( tmp
@@ -259,16 +192,6 @@ int main ( int argc, char ** argv ) {
                              , class[1]
                              );
                     strcat ( buf, tmp );
-
-                    /*
-                    fprintf ( stderr
-                            , "added %u to class[0] %i; probabilty: %f\n"
-                            , time
-                            , class[0]
-                            , (double)class[0] / (double)groupsize
-                            );
-                    printMeans ( &groups[0] );
-                    */
 
                 }
 
