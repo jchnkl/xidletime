@@ -38,7 +38,7 @@ int main ( int argc, char ** argv ) {
       , major = 0, minor = 0
       , ev_base = 0, err_base = 0
       , numCounter = 0
-      , myIdleTime = strtol ( argv[1], NULL, 10 ) * 1000
+      , myIdleTime = strtol ( argv[2], NULL, 10 ) * 1000
       , nwIdleTime = myIdleTime
       ;
 
@@ -51,8 +51,8 @@ int main ( int argc, char ** argv ) {
     sigaction ( SIGUSR1, &sa, NULL );
 
     const char * groupFiles[2];
-    groupFiles[0] = argv[2]; // idleFile
-    groupFiles[1] = argv[3]; // timeoutFile
+    groupFiles[0] = argv[3]; // idleFile
+    groupFiles[1] = argv[4]; // timeoutFile
 
     group_t groups[2];
     int idleGroupSize = 100;
@@ -156,15 +156,33 @@ int main ( int argc, char ** argv ) {
                     unsigned int newtime = 0;
                     unsigned int time = alarmEvent->time - lastEventTime;
 
-                    class[0] = addValue ( &groups[0], &time ) + 1;
+                    class[0] = addValue ( &groups[0], &time );
 
                     FILE * stream = fopen ( groupFiles[0], "a" );
                     fwrite ( &time, sizeof ( unsigned int ), 1, stream );
                     fclose ( stream );
 
+                    // gnuplot:
+                    // base=0.2
+                    // plot [0:99] (-1.0 * log(100/base) / log(base)) + log(x) / log(base)
+                    double base = strtod ( argv[1], NULL );
+                    double prob = -1.0 * log(idleGroupSize/base) / log(base)
+                                + log(class[0] + 1.0) / log(base);
 
+                    double weight = (class[1] + 1.0) / (double)timeoutGroupSize;
 
+                    newtime = nwIdleTime * weight * prob;
 
+                    char tmp[64];
+                    snprintf ( tmp
+                             , 64
+                             , " [%i/100 = %.2f; w: %f; p: %f]"
+                             , class[0]
+                             , prob
+                             , weight
+                             , weight * prob
+                             );
+                    strcat ( buf, tmp );
 
                     // if ( nwIdleTime >= myIdleTime ) {
                     if ( newtime >= myIdleTime ) {
@@ -180,14 +198,13 @@ int main ( int argc, char ** argv ) {
                         attributes[0].trigger.wait_value = value[1];
                     }
 
-
-                    char tmp[64];
                     snprintf ( tmp
                              , 64
                              // , " %i / %i = %.2f (%i) (%i)"
-                             , " new timeout: %-i; timeout class: %-i"
+                             , " newtime: %-i; new timeout: %-i; timeout class: %-i"
                              // , groupsize
                              // , prob
+                             , newtime
                              , nwIdleTime / 1000
                              , class[1]
                              );
