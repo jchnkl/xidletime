@@ -25,6 +25,14 @@ static void installSignalHandler ( int nsignals, int * signals );
 
 static void signalHandler ( int sig, siginfo_t * siginfo, void * context );
 
+static
+void initGroups ( int (* init) (int)
+                , int ngroups
+                , group_t * group
+                , int * size
+                , const char ** seed
+                );
+
 int main ( int argc, char ** argv ) {
 
     int i = 0, k = 0
@@ -40,25 +48,9 @@ int main ( int argc, char ** argv ) {
     groupFiles[1] = argv[4]; // timeoutFile
 
     group_t groups[2];
-    int idleGroupSize = 100;
-    makeGroup ( &groups[0], idleGroupSize );
-
-    for ( k = 0; k < idleGroupSize; k++ ) {
-        groups[0].cluster[k].mean = myIdleTime * k / (double)idleGroupSize;
-    }
-
-    seedGroup ( &groups[0], groupFiles[0] );
-    updateGroup ( &groups[0] );
-
-    int timeoutGroupSize = 10;
-    makeGroup ( &groups[1], timeoutGroupSize );
-    groups[1].cmp_type = FILL;
-
-    for ( k = 0; k < timeoutGroupSize; k++ ) {
-        groups[1].cluster[k].mean = myIdleTime * k / (double)timeoutGroupSize;
-    }
-
-    seedGroup ( &groups[1], groupFiles[1] );
+    int size[] = { 100, 10 };
+    int initMeans ( int v ) { return myIdleTime * v; }
+    initGroups ( initMeans, 2, groups, size, groupFiles );
 
     memset ( &globalSignalData, 0, sizeof ( signalData ) );
     globalSignalData.ngroups = 2;
@@ -115,8 +107,8 @@ int main ( int argc, char ** argv ) {
     alarm[0] = XSyncCreateAlarm ( dpy, flags, &attributes[0] );
 
     int class[2];
-    class[0] = idleGroupSize - 1;
-    class[1] = timeoutGroupSize - 1;
+    class[0] = size[0] - 1;
+    class[1] = size[1] - 1;
 
     while ( 1 ) {
         XNextEvent ( dpy, &xEvent );
@@ -147,10 +139,10 @@ int main ( int argc, char ** argv ) {
                     // base=0.2
                     // plot [0:99] (-1.0 * log(100/base) / log(base)) + log(x) / log(base)
                     double base = strtod ( argv[1], NULL );
-                    double prob = -1.0 * log(idleGroupSize/base) / log(base)
+                    double prob = -1.0 * log(size[0]/base) / log(base)
                                 + log(class[0] + 1.0) / log(base);
 
-                    double weight = (class[1] + 1.0) / (double)timeoutGroupSize;
+                    double weight = (class[1] + 1.0) / (double)size[1];
 
                     newtime = nwIdleTime * weight * prob;
 
@@ -225,5 +217,24 @@ static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
                           );
             }
             exit ( EXIT_SUCCESS );
+    }
+}
+
+static
+void initGroups ( int (* init) (int)
+                , int ngroups
+                , group_t * group
+                , int * size
+                , const char ** seed
+                ) {
+    int i, k;
+
+    for ( i = 0; i < ngroups; i++ ) {
+        makeGroup ( &group[i], size[i] );
+        for ( k = 0; k < size[i]; k++ ) {
+            // group[0].cluster[k].mean = myIdleTime * k / (double)size[0];
+            group[i].cluster[k].mean = init ( k / (double)size[i] );
+        }
+        seedGroup ( &group[i], seed[i] );
     }
 }
