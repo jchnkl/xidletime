@@ -10,14 +10,14 @@
 
 #include "kMeans.h"
 
-typedef struct sigData
+typedef struct signalData
     { int ngroups
     ; group_t * groups
     ; const char ** groupFiles
     ;
-    } sigData;
+    } signalData;
 
-sigData globalSigData;
+signalData globalSignalData;
 
 long XSyncValueToLong ( XSyncValue *value );
 
@@ -63,10 +63,10 @@ int main ( int argc, char ** argv ) {
 
     seedGroup ( &groups[1], groupFiles[1] );
 
-    memset ( &globalSigData, 0, sizeof ( sigData ) );
-    globalSigData.ngroups = 2;
-    globalSigData.groups = groups;
-    globalSigData.groupFiles = groupFiles;
+    memset ( &globalSignalData, 0, sizeof ( signalData ) );
+    globalSignalData.ngroups = 2;
+    globalSignalData.groups = groups;
+    globalSignalData.groupFiles = groupFiles;
 
     XEvent xEvent;
     Time lastEventTime = 0;
@@ -213,15 +213,15 @@ static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
 
     switch (sig) {
         case SIGUSR1:
-            for ( g = 0; g < globalSigData.ngroups; g++ ) {
-                printGroup ( &(globalSigData.groups[g]) );
+            for ( g = 0; g < globalSignalData.ngroups; g++ ) {
+                printGroup ( &(globalSignalData.groups[g]) );
             }
             break;
 
         default:
-            for ( g = 0; g < globalSigData.ngroups; g++ ) {
-                dumpGroup ( &(globalSigData.groups[g])
-                          ,   globalSigData.groupFiles[g]
+            for ( g = 0; g < globalSignalData.ngroups; g++ ) {
+                dumpGroup ( &(globalSignalData.groups[g])
+                          ,   globalSignalData.groupFiles[g]
                           );
             }
             exit ( EXIT_SUCCESS );
