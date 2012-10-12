@@ -13,7 +13,7 @@
 typedef struct signalData
     { int ngroups
     ; group_t * groups
-    ; const char ** groupFiles
+    ; const char ** seed
     ;
     } signalData;
 
@@ -55,7 +55,7 @@ int main ( int argc, char ** argv ) {
     memset ( &globalSignalData, 0, sizeof ( signalData ) );
     globalSignalData.ngroups = 2;
     globalSignalData.groups = groups;
-    globalSignalData.groupFiles = groupFiles;
+    globalSignalData.seed = groupFiles;
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
     installSignalHandler ( 3, signals );
@@ -213,7 +213,7 @@ static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
         default:
             for ( g = 0; g < globalSignalData.ngroups; g++ ) {
                 dumpGroup ( &(globalSignalData.groups[g])
-                          ,   globalSignalData.groupFiles[g]
+                          ,   globalSignalData.seed[g]
                           );
             }
             exit ( EXIT_SUCCESS );
