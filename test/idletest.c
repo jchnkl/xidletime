@@ -158,7 +158,6 @@ int main ( int argc, char ** argv ) {
 
                     newtime = nwIdleTime * weight * prob;
 
-                    // if ( nwIdleTime >= myIdleTime ) {
                     if ( newtime >= myIdleTime ) {
                         nwIdleTime = newtime;
 
