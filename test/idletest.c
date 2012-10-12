@@ -21,6 +21,8 @@ sigData globalSigData;
 
 long XSyncValueToLong ( XSyncValue *value );
 
+static void installSignalHandler ( int nsignals, int * signals );
+
 static void signalHandler ( int sig, siginfo_t * siginfo, void * context );
 
 int main ( int argc, char ** argv ) {
@@ -33,13 +35,8 @@ int main ( int argc, char ** argv ) {
       , nwIdleTime = myIdleTime
       ;
 
-    struct sigaction sa;
-    memset ( &sa, 0, sizeof ( struct sigaction ) );
-    sa.sa_flags     = SA_SIGINFO;
-    sa.sa_sigaction = signalHandler;
-    sigaction ( SIGINT,  &sa, NULL );
-    sigaction ( SIGTERM, &sa, NULL );
-    sigaction ( SIGUSR1, &sa, NULL );
+    int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
+    installSignalHandler ( 3, signals );
 
     const char * groupFiles[2];
     groupFiles[0] = argv[3]; // idleFile
@@ -196,6 +193,17 @@ long XSyncValueToLong ( XSyncValue *value ) {
     return ( (long) XSyncValueHigh32 ( *value ) << 32
             | XSyncValueLow32 ( *value )
            );
+}
+
+static void installSignalHandler ( int nsignals, int * signals ) {
+    int i;
+    struct sigaction sa;
+
+    memset ( &sa, 0, sizeof ( struct sigaction ) );
+    sa.sa_flags     = SA_SIGINFO;
+    sa.sa_sigaction = signalHandler;
+
+    for ( i = 0; i < nsignals; i++ ) sigaction ( signals[i],  &sa, NULL );
 }
 
 static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
