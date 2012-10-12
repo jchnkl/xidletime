@@ -62,7 +62,7 @@ int main ( int argc, char ** argv ) {
 
     XEvent xEvent;
     Time lastEventTime = 0;
-    XSyncValue value[3];
+    XSyncValue value[2];
     XSyncAlarmNotifyEvent * alarmEvent = NULL;
 
     XSyncAlarm alarm[2];
