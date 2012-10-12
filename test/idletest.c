@@ -12,7 +12,7 @@
 
 typedef struct signalData
     { int ngroups
-    ; group_t * groups
+    ; group_t * group
     ; const char ** seed
     ;
     } signalData;
@@ -54,7 +54,7 @@ int main ( int argc, char ** argv ) {
 
     memset ( &globalSignalData, 0, sizeof ( signalData ) );
     globalSignalData.ngroups = 2;
-    globalSignalData.groups = groups;
+    globalSignalData.group = groups;
     globalSignalData.seed = seed;
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
@@ -206,13 +206,13 @@ static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
     switch (sig) {
         case SIGUSR1:
             for ( g = 0; g < globalSignalData.ngroups; g++ ) {
-                printGroup ( &(globalSignalData.groups[g]) );
+                printGroup ( &(globalSignalData.group[g]) );
             }
             break;
 
         default:
             for ( g = 0; g < globalSignalData.ngroups; g++ ) {
-                dumpGroup ( &(globalSignalData.groups[g])
+                dumpGroup ( &(globalSignalData.group[g])
                           ,   globalSignalData.seed[g]
                           );
             }
