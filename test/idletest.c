@@ -43,19 +43,19 @@ int main ( int argc, char ** argv ) {
       , nwIdleTime = myIdleTime
       ;
 
-    const char * groupFiles[2];
-    groupFiles[0] = argv[3]; // idleFile
-    groupFiles[1] = argv[4]; // timeoutFile
+    const char * seed[2];
+    seed[0] = argv[3]; // idleFile
+    seed[1] = argv[4]; // timeoutFile
 
     group_t groups[2];
     int size[] = { 100, 10 };
     int initMeans ( int v ) { return myIdleTime * v; }
-    initGroups ( initMeans, 2, groups, size, groupFiles );
+    initGroups ( initMeans, 2, groups, size, seed );
 
     memset ( &globalSignalData, 0, sizeof ( signalData ) );
     globalSignalData.ngroups = 2;
     globalSignalData.groups = groups;
-    globalSignalData.seed = groupFiles;
+    globalSignalData.seed = seed;
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
     installSignalHandler ( 3, signals );
@@ -131,7 +131,7 @@ int main ( int argc, char ** argv ) {
 
                     class[0] = addValue ( &groups[0], &time );
 
-                    FILE * stream = fopen ( groupFiles[0], "a" );
+                    FILE * stream = fopen ( seed[0], "a" );
                     fwrite ( &time, sizeof ( unsigned int ), 1, stream );
                     fclose ( stream );
 
@@ -151,7 +151,7 @@ int main ( int argc, char ** argv ) {
 
                         class[1] = addValue ( &groups[1], &newtime );
 
-                        FILE * stream = fopen ( groupFiles[1], "a" );
+                        FILE * stream = fopen ( seed[1], "a" );
                         fwrite ( &newtime, sizeof ( unsigned int ), 1, stream );
                         fclose ( stream );
 
@@ -171,10 +171,10 @@ int main ( int argc, char ** argv ) {
 
     }
 
-    dumpGroup ( &groups[0], groupFiles[0] );
+    dumpGroup ( &groups[0], seed[0] );
     finalizeGroup ( &groups[0] );
 
-    dumpGroup ( &groups[1], groupFiles[1] );
+    dumpGroup ( &groups[1], seed[1] );
     finalizeGroup ( &groups[1] );
 
     return 0;
