@@ -22,7 +22,7 @@ sigData globalSigData;
 
 long XSyncValueToLong ( XSyncValue *value );
 
-static void sigHandler ( int sig, siginfo_t * siginfo, void * context );
+static void signalHandler ( int sig, siginfo_t * siginfo, void * context );
 
 int main ( int argc, char ** argv ) {
 
@@ -37,7 +37,7 @@ int main ( int argc, char ** argv ) {
     struct sigaction sa;
     memset ( &sa, 0, sizeof ( struct sigaction ) );
     sa.sa_flags     = SA_SIGINFO;
-    sa.sa_sigaction = sigHandler;
+    sa.sa_sigaction = signalHandler;
     sigaction ( SIGINT,  &sa, NULL );
     sigaction ( SIGTERM, &sa, NULL );
     sigaction ( SIGUSR1, &sa, NULL );
@@ -199,7 +199,7 @@ long XSyncValueToLong ( XSyncValue *value ) {
            );
 }
 
-static void sigHandler ( int sig, siginfo_t * siginfo, void * context ) {
+static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
     int g;
 
     fprintf ( stderr, "Caught signal %d\n", sig );
