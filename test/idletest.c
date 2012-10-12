@@ -26,13 +26,6 @@ static void sigHandler ( int sig, siginfo_t * siginfo, void * context );
 
 int main ( int argc, char ** argv ) {
 
-    unsigned long flags = XSyncCACounter
-                        | XSyncCAValueType
-                        | XSyncCATestType
-                        | XSyncCAValue
-                        | XSyncCADelta
-                        ;
-
     int i = 0, k = 0
       , major = 0, minor = 0
       , ev_base = 0, err_base = 0
@@ -115,6 +108,13 @@ int main ( int argc, char ** argv ) {
     attributes[0].trigger.test_type  = XSyncPositiveComparison;
     attributes[0].trigger.wait_value = value[1];
     attributes[0].delta              = value[0];
+
+    unsigned long flags = XSyncCACounter
+                        | XSyncCAValueType
+                        | XSyncCATestType
+                        | XSyncCAValue
+                        | XSyncCADelta
+                        ;
 
     alarm[0] = XSyncCreateAlarm ( dpy, flags, &attributes[0] );
 
