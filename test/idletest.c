@@ -10,6 +10,9 @@
 
 #include "kMeans.h"
 
+typedef unsigned  int uint;
+typedef unsigned long ulong;
+
 typedef struct signalData
     { int ngroups
     ; group_t * group
@@ -35,7 +38,7 @@ void initGroups ( int (* init) (int)
 
 static
 XSyncAlarm initAlarm ( Display ** dpy
-                     , unsigned long * flags
+                     , ulong * flags
                      , XSyncAlarmAttributes * attributes
                      , int * major
                      , int * minor
@@ -72,12 +75,12 @@ int main ( int argc, char ** argv ) {
     XEvent xEvent;
     Time lastEventTime = 0;
 
-    unsigned long flags = XSyncCACounter
-                        | XSyncCAValueType
-                        | XSyncCATestType
-                        | XSyncCAValue
-                        | XSyncCADelta
-                        ;
+    ulong flags = XSyncCACounter
+                | XSyncCAValueType
+                | XSyncCATestType
+                | XSyncCAValue
+                | XSyncCADelta
+                ;
     Display * dpy = NULL;
     XSyncAlarm alarm[2];
     XSyncAlarmAttributes attributes;
@@ -113,13 +116,13 @@ int main ( int argc, char ** argv ) {
 
                 if ( lastEventTime != 0 && lastEventTime < alarmEvent->time ) {
 
-                    unsigned int newtime = 0;
-                    unsigned int time = alarmEvent->time - lastEventTime;
+                    uint newtime = 0;
+                    uint time = alarmEvent->time - lastEventTime;
 
                     class[0] = addValue ( &group[0], &time );
 
                     FILE * stream = fopen ( seed[0], "a" );
-                    fwrite ( &time, sizeof ( unsigned int ), 1, stream );
+                    fwrite ( &time, sizeof ( uint ), 1, stream );
                     fclose ( stream );
 
                     // gnuplot:
@@ -139,7 +142,7 @@ int main ( int argc, char ** argv ) {
                         class[1] = addValue ( &group[1], &newtime );
 
                         FILE * stream = fopen ( seed[1], "a" );
-                        fwrite ( &newtime, sizeof ( unsigned int ), 1, stream );
+                        fwrite ( &newtime, sizeof ( uint ), 1, stream );
                         fclose ( stream );
 
                         XSyncValue value;
@@ -229,7 +232,7 @@ void initGroups ( int (* init) (int)
 
 static
 XSyncAlarm initAlarm ( Display ** dpy
-                     , unsigned long * flags
+                     , ulong * flags
                      , XSyncAlarmAttributes * attributes
                      , int * major
                      , int * minor
