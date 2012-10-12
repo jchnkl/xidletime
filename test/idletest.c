@@ -47,14 +47,14 @@ int main ( int argc, char ** argv ) {
     seed[0] = argv[3]; // idleFile
     seed[1] = argv[4]; // timeoutFile
 
-    group_t groups[2];
+    group_t group[2];
     int size[] = { 100, 10 };
     int initMeans ( int v ) { return myIdleTime * v; }
-    initGroups ( initMeans, 2, groups, size, seed );
+    initGroups ( initMeans, 2, group, size, seed );
 
     memset ( &globalSignalData, 0, sizeof ( signalData ) );
     globalSignalData.ngroups = 2;
-    globalSignalData.group = groups;
+    globalSignalData.group = group;
     globalSignalData.seed = seed;
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
@@ -129,7 +129,7 @@ int main ( int argc, char ** argv ) {
                     unsigned int newtime = 0;
                     unsigned int time = alarmEvent->time - lastEventTime;
 
-                    class[0] = addValue ( &groups[0], &time );
+                    class[0] = addValue ( &group[0], &time );
 
                     FILE * stream = fopen ( seed[0], "a" );
                     fwrite ( &time, sizeof ( unsigned int ), 1, stream );
@@ -149,7 +149,7 @@ int main ( int argc, char ** argv ) {
                     if ( newtime >= myIdleTime ) {
                         nwIdleTime = newtime;
 
-                        class[1] = addValue ( &groups[1], &newtime );
+                        class[1] = addValue ( &group[1], &newtime );
 
                         FILE * stream = fopen ( seed[1], "a" );
                         fwrite ( &newtime, sizeof ( unsigned int ), 1, stream );
@@ -171,11 +171,11 @@ int main ( int argc, char ** argv ) {
 
     }
 
-    dumpGroup ( &groups[0], seed[0] );
-    finalizeGroup ( &groups[0] );
+    dumpGroup ( &group[0], seed[0] );
+    finalizeGroup ( &group[0] );
 
-    dumpGroup ( &groups[1], seed[1] );
-    finalizeGroup ( &groups[1] );
+    dumpGroup ( &group[1], seed[1] );
+    finalizeGroup ( &group[1] );
 
     return 0;
 
