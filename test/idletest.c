@@ -35,9 +35,6 @@ int main ( int argc, char ** argv ) {
       , nwIdleTime = myIdleTime
       ;
 
-    int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
-    installSignalHandler ( 3, signals );
-
     const char * groupFiles[2];
     groupFiles[0] = argv[3]; // idleFile
     groupFiles[1] = argv[4]; // timeoutFile
@@ -67,6 +64,9 @@ int main ( int argc, char ** argv ) {
     globalSignalData.ngroups = 2;
     globalSignalData.groups = groups;
     globalSignalData.groupFiles = groupFiles;
+
+    int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
+    installSignalHandler ( 3, signals );
 
     XEvent xEvent;
     Time lastEventTime = 0;
