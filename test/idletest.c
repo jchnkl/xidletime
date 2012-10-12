@@ -33,8 +33,7 @@ int main ( int argc, char ** argv ) {
                         | XSyncCADelta
                         ;
 
-    int i = 0
-      , k = 0
+    int i = 0, k = 0
       , major = 0, minor = 0
       , ev_base = 0, err_base = 0
       , numCounter = 0
