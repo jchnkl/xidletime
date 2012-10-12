@@ -108,9 +108,8 @@ int main ( int argc, char ** argv ) {
 
     XSyncIntToValue ( &value[0], 0 );
     XSyncIntToValue ( &value[1], myIdleTime );
-    XSyncIntToValue ( &value[2], myIdleTime );
 
-    XSyncAlarmAttributes attributes[2];
+    XSyncAlarmAttributes attributes[1];
 
     attributes[0].trigger.counter    = counter->counter;
     attributes[0].trigger.value_type = XSyncAbsolute;
@@ -118,15 +117,7 @@ int main ( int argc, char ** argv ) {
     attributes[0].trigger.wait_value = value[1];
     attributes[0].delta              = value[0];
 
-    attributes[1].trigger.counter    = counter->counter;
-    attributes[1].trigger.value_type = XSyncAbsolute;
-    attributes[1].trigger.test_type  = XSyncPositiveComparison;
-    attributes[1].trigger.wait_value = value[2];
-    attributes[1].delta              = value[0];
-
-
     alarm[0] = XSyncCreateAlarm ( dpy, flags, &attributes[0] );
-    alarm[1] = XSyncCreateAlarm ( dpy, flags, &attributes[1] );
 
     char buf[256];
 
@@ -222,18 +213,6 @@ int main ( int argc, char ** argv ) {
                 fprintf ( stderr, "%s\n", buf );
             }
             lastEventTime = alarmEvent->time;
-
-        } else if ( alarmEvent->alarm == alarm[1] ) {
-
-            if ( XSyncValueLessThan ( alarmEvent->counter_value
-                                    , alarmEvent->alarm_value
-                                    )
-               ) {
-                attributes[1].trigger.test_type = XSyncPositiveComparison;
-            } else {
-                attributes[1].trigger.test_type = XSyncNegativeComparison;
-            }
-            XSyncChangeAlarm ( dpy, alarm[1], flags, &attributes[1] );
 
         }
 
