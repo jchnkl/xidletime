@@ -118,14 +118,11 @@ int main ( int argc, char ** argv ) {
 
     alarm[0] = XSyncCreateAlarm ( dpy, flags, &attributes[0] );
 
-    char buf[256];
-
     int class[2];
     class[0] = idleGroupSize - 1;
     class[1] = timeoutGroupSize - 1;
 
     while ( 1 ) {
-        memset ( buf, 0, 63 );
         XNextEvent ( dpy, &xEvent );
 
         if ( xEvent.type != ev_base + XSyncAlarmNotify ) continue;
@@ -133,12 +130,10 @@ int main ( int argc, char ** argv ) {
         alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
 
         if ( alarmEvent->alarm == alarm[0] ) {
-            strcat ( buf,  "alarm[0]: " );
             if ( XSyncValueLessThan ( alarmEvent->counter_value
                                     , alarmEvent->alarm_value
                                     )
                ) {
-                strcat ( buf,  "Reset" );
                 attributes[0].trigger.test_type = XSyncPositiveComparison;
 
                 if ( lastEventTime != 0 && lastEventTime < alarmEvent->time ) {
@@ -163,17 +158,6 @@ int main ( int argc, char ** argv ) {
 
                     newtime = nwIdleTime * weight * prob;
 
-                    char tmp[64];
-                    snprintf ( tmp
-                             , 64
-                             , " [%i/100 = %.2f; w: %f; p: %f]"
-                             , class[0]
-                             , prob
-                             , weight
-                             , weight * prob
-                             );
-                    strcat ( buf, tmp );
-
                     // if ( nwIdleTime >= myIdleTime ) {
                     if ( newtime >= myIdleTime ) {
                         nwIdleTime = newtime;
@@ -188,31 +172,14 @@ int main ( int argc, char ** argv ) {
                         attributes[0].trigger.wait_value = value[1];
                     }
 
-                    snprintf ( tmp
-                             , 64
-                             // , " %i / %i = %.2f (%i) (%i)"
-                             , " newtime: %-i; new timeout: %-i; timeout class: %-i"
-                             // , groupsize
-                             // , prob
-                             , newtime
-                             , nwIdleTime / 1000
-                             , class[1]
-                             );
-                    strcat ( buf, tmp );
-
                 }
 
             } else {
-                strcat ( buf,  "Idle" );
                 attributes[0].trigger.test_type = XSyncNegativeComparison;
             }
+
             XSyncChangeAlarm ( dpy, alarm[0], flags, &attributes[0] );
-
-            if ( lastEventTime < alarmEvent->time ) {
-                fprintf ( stderr, "%s\n", buf );
-            }
             lastEventTime = alarmEvent->time;
-
         }
 
     }
