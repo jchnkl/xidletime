@@ -33,6 +33,7 @@ typedef struct groupData
     ; int ngroups
     ; group_t * group
     ; int * size
+    ; cmp_type_t * comp
     ; const char ** seed
     ;
     } groupData;
@@ -70,6 +71,7 @@ int main ( int argc, char ** argv ) {
 
     group_t group[2];
     int size[] = { 100, 10 };
+    cmp_type_t comp[] = { MEAN, FILL };
     int initMeans ( int v ) { return myIdleTime * v; }
 
     groupData gd; memset ( &gd, 0, sizeof ( groupData ) );
@@ -77,6 +79,7 @@ int main ( int argc, char ** argv ) {
     gd.ngroups = 2;
     gd.group = group;
     gd.size = size;
+    gd.comp = comp;
     gd.seed = seed;
     initGroups ( &gd );
 
@@ -235,6 +238,7 @@ void initGroups ( groupData * gd ) {
     int i, k;
 
     for ( i = 0; i < gd->ngroups; i++ ) {
+        gd->group[i].cmp_type = gd->comp[i];
         makeGroup ( &(gd->group[i]), gd->size[i] );
         for ( k = 0; k < gd->size[i]; k++ ) {
             // group[0].cluster[k].mean = myIdleTime * k / (double)size[0];
