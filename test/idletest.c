@@ -28,13 +28,17 @@ static void installSignalHandler ( int nsignals, int * signals );
 
 static void signalHandler ( int sig, siginfo_t * siginfo, void * context );
 
+typedef struct groupData
+    { int (* init) (int)
+    ; int ngroups
+    ; group_t * group
+    ; int * size
+    ; const char ** seed
+    ;
+    } groupData;
+
 static
-void initGroups ( int (* init) (int)
-                , int ngroups
-                , group_t * group
-                , int * size
-                , const char ** seed
-                );
+void initGroups ( groupData * gd );
 
 static
 XSyncAlarm initAlarm ( Display ** dpy
@@ -62,7 +66,13 @@ int main ( int argc, char ** argv ) {
     group_t group[2];
     int size[] = { 100, 10 };
     int initMeans ( int v ) { return myIdleTime * v; }
-    initGroups ( initMeans, 2, group, size, seed );
+    groupData gd; memset ( &gd, 0, sizeof ( groupData ) );
+    gd.init = initMeans;
+    gd.ngroups = 2;
+    gd.group = group;
+    gd.size = size;
+    gd.seed = seed;
+    initGroups ( &gd );
 
     memset ( &globalSignalData, 0, sizeof ( signalData ) );
     globalSignalData.ngroups = 2;
@@ -212,21 +222,16 @@ static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
 }
 
 static
-void initGroups ( int (* init) (int)
-                , int ngroups
-                , group_t * group
-                , int * size
-                , const char ** seed
-                ) {
+void initGroups ( groupData * gd ) {
     int i, k;
 
-    for ( i = 0; i < ngroups; i++ ) {
-        makeGroup ( &group[i], size[i] );
-        for ( k = 0; k < size[i]; k++ ) {
+    for ( i = 0; i < gd->ngroups; i++ ) {
+        makeGroup ( &(gd->group[i]), gd->size[i] );
+        for ( k = 0; k < gd->size[i]; k++ ) {
             // group[0].cluster[k].mean = myIdleTime * k / (double)size[0];
-            group[i].cluster[k].mean = init ( k / (double)size[i] );
+            gd->group[i].cluster[k].mean = gd->init ( k / (double)(gd->size[i]) );
         }
-        seedGroup ( &group[i], seed[i] );
+        seedGroup ( &(gd->group[i]), gd->seed[i] );
     }
 }
 
