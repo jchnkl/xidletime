@@ -40,16 +40,21 @@ typedef struct groupData
 static
 void initGroups ( groupData * gd );
 
+typedef struct alarmData
+    { Display * dpy
+    ; ulong * flags
+    ; XSyncAlarmAttributes * attributes
+    ; XSyncAlarm * alarm
+    ; int * major
+    ; int * minor
+    ; int * ev_base
+    ; int * err_base
+    ; int * idletime
+    ;
+    } alarmData;
+
 static
-XSyncAlarm initAlarm ( Display ** dpy
-                     , ulong * flags
-                     , XSyncAlarmAttributes * attributes
-                     , int * major
-                     , int * minor
-                     , int * ev_base
-                     , int * err_base
-                     , int * idletime
-                     );
+void initAlarm ( alarmData * ad );
 
 int main ( int argc, char ** argv ) {
 
@@ -91,33 +96,34 @@ int main ( int argc, char ** argv ) {
                 | XSyncCAValue
                 | XSyncCADelta
                 ;
-    Display * dpy = NULL;
-    XSyncAlarm alarm[2];
-    XSyncAlarmAttributes attributes;
-    alarm[0] = initAlarm ( &dpy
-                         , &flags
-                         , &attributes
-                         , &major
-                         , &minor
-                         , &ev_base
-                         , &err_base
-                         , &myIdleTime
-                         );
 
-    if ( dpy == NULL ) exit ( EXIT_FAILURE );
+    XSyncAlarm alarm;
+    XSyncAlarmAttributes attributes;
+
+    alarmData ad; memset ( &ad, 0, sizeof ( alarmData ) );
+    ad.flags = &flags;
+    ad.attributes = &attributes;
+    ad.alarm = &alarm;
+    ad.major = &major;
+    ad.minor = &minor;
+    ad.ev_base = &ev_base;
+    ad.err_base = &err_base;
+    ad.idletime = &myIdleTime;
+
+    initAlarm ( &ad );
 
     int class[2];
     class[0] = size[0] - 1;
     class[1] = size[1] - 1;
 
     while ( 1 ) {
-        XNextEvent ( dpy, &xEvent );
+        XNextEvent ( ad.dpy, &xEvent );
 
         if ( xEvent.type != ev_base + XSyncAlarmNotify ) continue;
 
         XSyncAlarmNotifyEvent * alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
 
-        if ( alarmEvent->alarm == alarm[0] ) {
+        if ( alarmEvent->alarm == alarm ) {
             if ( XSyncValueLessThan ( alarmEvent->counter_value
                                     , alarmEvent->alarm_value
                                     )
@@ -166,7 +172,7 @@ int main ( int argc, char ** argv ) {
                 attributes.trigger.test_type = XSyncNegativeComparison;
             }
 
-            XSyncChangeAlarm ( dpy, alarm[0], flags, &attributes );
+            XSyncChangeAlarm ( ad.dpy, alarm, flags, &attributes );
             lastEventTime = alarmEvent->time;
         }
 
@@ -236,26 +242,18 @@ void initGroups ( groupData * gd ) {
 }
 
 static
-XSyncAlarm initAlarm ( Display ** dpy
-                     , ulong * flags
-                     , XSyncAlarmAttributes * attributes
-                     , int * major
-                     , int * minor
-                     , int * ev_base
-                     , int * err_base
-                     , int * idletime
-                     ) {
+void initAlarm ( alarmData * ad ) {
     int i, listCount = 0;
     XSyncSystemCounter * sysCounter = NULL, * counter = NULL;
     XSyncValue value[2];
 
-    *dpy = XOpenDisplay ("");
-    Window root = DefaultRootWindow ( *dpy );
-    XSelectInput ( *dpy, root, XSyncAlarmNotifyMask );
-    XSyncInitialize ( *dpy, major, minor );
-    XSyncQueryExtension ( *dpy , ev_base , err_base );
+    ad->dpy = XOpenDisplay ("");
+    Window root = DefaultRootWindow ( ad->dpy );
+    XSelectInput ( ad->dpy, root, XSyncAlarmNotifyMask );
+    XSyncInitialize ( ad->dpy, ad->major, ad->minor );
+    XSyncQueryExtension ( ad->dpy , ad->ev_base , ad->err_base );
 
-    sysCounter = XSyncListSystemCounters ( *dpy, &listCount );
+    sysCounter = XSyncListSystemCounters ( ad->dpy, &listCount );
 
     for ( i = 0; i < listCount; i++ ) {
         if ( 0 == strcmp ( sysCounter[i].name, "IDLETIME" ) ) {
@@ -264,13 +262,13 @@ XSyncAlarm initAlarm ( Display ** dpy
     }
 
     XSyncIntToValue ( &value[0], 0 );
-    XSyncIntToValue ( &value[1], *idletime );
+    XSyncIntToValue ( &value[1], *(ad->idletime) );
 
-    attributes->trigger.counter    = counter->counter;
-    attributes->trigger.value_type = XSyncAbsolute;
-    attributes->trigger.test_type  = XSyncPositiveComparison;
-    attributes->trigger.wait_value = value[1];
-    attributes->delta              = value[0];
+    ad->attributes->trigger.counter    = counter->counter;
+    ad->attributes->trigger.value_type = XSyncAbsolute;
+    ad->attributes->trigger.test_type  = XSyncPositiveComparison;
+    ad->attributes->trigger.wait_value = value[1];
+    ad->attributes->delta              = value[0];
 
-    return XSyncCreateAlarm ( *dpy, *flags, attributes );
+    *(ad->alarm) = XSyncCreateAlarm ( ad->dpy, *(ad->flags), ad->attributes );
 }
