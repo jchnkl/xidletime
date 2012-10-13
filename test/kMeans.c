@@ -25,11 +25,7 @@ cmp_fun_t cmp_fun[] =
 
 int makeGroup ( group_t * group, unsigned int size ) {
 
-    if ( group == NULL ) {
-        group = (group_t *) calloc ( size, sizeof ( group_t ) );
-    } else {
-        memset ( group, 0, sizeof ( group_t ) );
-    }
+    if ( group == NULL ) group = (group_t *) calloc ( size, sizeof ( group_t ) );
 
     group->size = size;
 

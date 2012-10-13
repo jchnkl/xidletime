@@ -239,6 +239,8 @@ static
 void initGroups ( groupData * gd ) {
     int i, k;
 
+    memset ( gd->group, 0, gd->ngroups * sizeof ( group_t ) );
+
     for ( i = 0; i < gd->ngroups; i++ ) {
         gd->group[i].cmp_type = gd->comp[i];
         makeGroup ( &(gd->group[i]), gd->size[i] );
