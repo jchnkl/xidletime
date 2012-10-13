@@ -29,7 +29,7 @@ static void installSignalHandler ( int nsignals, int * signals );
 static void signalHandler ( int sig, siginfo_t * siginfo, void * context );
 
 typedef struct groupData
-    { int (* init) (int)
+    { int (* init) (int, int)
     ; int ngroups
     ; group_t * group
     ; int * size
@@ -72,7 +72,9 @@ int main ( int argc, char ** argv ) {
     group_t group[2];
     int size[] = { 100, 10 };
     cmp_type_t comp[] = { MEAN, FILL };
-    int initMeans ( int v ) { return myIdleTime * v; }
+    int initMeans ( int m, int s ) {
+        return (int)((double)myIdleTime * (double)m / (double)s);
+    }
 
     groupData gd; memset ( &gd, 0, sizeof ( groupData ) );
     gd.init = initMeans;
@@ -241,8 +243,7 @@ void initGroups ( groupData * gd ) {
         gd->group[i].cmp_type = gd->comp[i];
         makeGroup ( &(gd->group[i]), gd->size[i] );
         for ( k = 0; k < gd->size[i]; k++ ) {
-            // group[0].cluster[k].mean = myIdleTime * k / (double)size[0];
-            gd->group[i].cluster[k].mean = gd->init ( k / (double)(gd->size[i]) );
+            gd->group[i].cluster[k].mean = gd->init ( k, gd->size[i] );
         }
         seedGroup ( &(gd->group[i]), gd->seed[i] );
     }
