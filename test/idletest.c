@@ -71,6 +71,7 @@ int main ( int argc, char ** argv ) {
     group_t group[2];
     int size[] = { 100, 10 };
     int initMeans ( int v ) { return myIdleTime * v; }
+
     groupData gd; memset ( &gd, 0, sizeof ( groupData ) );
     gd.init = initMeans;
     gd.ngroups = 2;
