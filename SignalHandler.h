@@ -2,7 +2,6 @@
 #define __SIGNALHANDLER_H
 
 #include <signal.h>
-#include "kmeans.h"
 
 void installSignalHandler
     ( int nsignals
