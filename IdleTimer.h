@@ -5,6 +5,8 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
+typedef enum IdleT { Idle=0, Reset } IdleT;
+
 typedef struct IdleTimerData
     { Display * dpy                     // ptr to display
     ; int major                         // major version
@@ -23,5 +25,10 @@ long XSyncValueToLong ( XSyncValue *value );
 
 void initIdleTimer ( IdleTimerData * );
 
+void runTimer
+    ( IdleTimerData *
+    , void (* cb) (IdleT, IdleTimerData *, XSyncAlarmNotifyEvent *, void *)
+    , void *
+    );
 
 #endif

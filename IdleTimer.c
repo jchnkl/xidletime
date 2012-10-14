@@ -39,3 +39,37 @@ void initIdleTimer ( IdleTimerData * itd ) {
     itd->alarm = XSyncCreateAlarm ( itd->dpy, itd->flags, itd->attributes );
 }
 
+void runTimer
+    ( IdleTimerData * itd
+    , void (* cb) (IdleT, IdleTimerData *, XSyncAlarmNotifyEvent *, void *)
+    , void * data
+    ) {
+
+    XEvent xEvent;
+    XSyncAlarmNotifyEvent * alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
+
+    while ( 1 ) {
+        XNextEvent ( itd->dpy, &xEvent );
+
+        if ( xEvent.type != itd->ev_base + XSyncAlarmNotify ) continue;
+
+        if ( alarmEvent->alarm == itd->alarm ) {
+            if ( XSyncValueLessThan ( alarmEvent->counter_value
+                                    , alarmEvent->alarm_value
+                                    )
+               ) {
+                itd->attributes->trigger.test_type = XSyncPositiveComparison;
+                if ( itd->lastEventTime != alarmEvent->time )
+                    cb ( Reset, itd, alarmEvent, data );
+            } else {
+                itd->attributes->trigger.test_type = XSyncNegativeComparison;
+                if ( itd->lastEventTime != alarmEvent->time )
+                    cb ( Idle, itd, alarmEvent, data );
+            }
+
+            XSyncChangeAlarm ( itd->dpy, itd->alarm, itd->flags, itd->attributes );
+            itd->lastEventTime = alarmEvent->time;
+        }
+
+    }
+}
