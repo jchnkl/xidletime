@@ -5,21 +5,23 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
-typedef struct AlarmData
+typedef struct IdleTimerData
     { Display * dpy                     // ptr to display
-    ; ulong * flags                     // flags for attributes
+    ; int major                         // major version
+    ; int minor                         // minor version
+    ; int ev_base                       // offset for event ptr
+    ; int err_base                      // offset for error
+    ; int idletime                      // timeout for idle alarm
+    ; ulong flags                       // flags for attributes
+    ; Time lastEventTime                // time of last event
+    ; XSyncAlarm alarm                  // alarm id
     ; XSyncAlarmAttributes * attributes // attributes
-    ; XSyncAlarm * alarm                // alarm id
-    ; int * major                       // major version
-    ; int * minor                       // minor version
-    ; int * ev_base                     // offset for event ptr
-    ; int * err_base                    // offset for error
-    ; int * idletime                    // timeout for idle alarm
     ;
-    } AlarmData;
-
-void initAlarm ( AlarmData * ad );
+    } IdleTimerData;
 
 long XSyncValueToLong ( XSyncValue *value );
+
+void initIdleTimer ( IdleTimerData * );
+
 
 #endif

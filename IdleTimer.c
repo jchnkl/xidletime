@@ -2,18 +2,18 @@
 
 #include <string.h>
 
-void initAlarm ( AlarmData * ad ) {
+void initIdleTimer ( IdleTimerData * itd ) {
     int i, listCount = 0;
     XSyncSystemCounter * sysCounter = NULL, * counter = NULL;
     XSyncValue value[2];
 
-    ad->dpy = XOpenDisplay ("");
-    Window root = DefaultRootWindow ( ad->dpy );
-    XSelectInput ( ad->dpy, root, XSyncAlarmNotifyMask );
-    XSyncInitialize ( ad->dpy, ad->major, ad->minor );
-    XSyncQueryExtension ( ad->dpy , ad->ev_base , ad->err_base );
+    itd->dpy = XOpenDisplay ("");
+    Window root = DefaultRootWindow ( itd->dpy );
+    XSelectInput ( itd->dpy, root, XSyncAlarmNotifyMask );
+    XSyncInitialize ( itd->dpy, &(itd->major), &(itd->minor) );
+    XSyncQueryExtension ( itd->dpy , &(itd->ev_base), &(itd->err_base) );
 
-    sysCounter = XSyncListSystemCounters ( ad->dpy, &listCount );
+    sysCounter = XSyncListSystemCounters ( itd->dpy, &listCount );
 
     for ( i = 0; i < listCount; i++ ) {
         if ( 0 == strcmp ( sysCounter[i].name, "IDLETIME" ) ) {
@@ -22,15 +22,15 @@ void initAlarm ( AlarmData * ad ) {
     }
 
     XSyncIntToValue ( &value[0], 0 );
-    XSyncIntToValue ( &value[1], *(ad->idletime) );
+    XSyncIntToValue ( &value[1], itd->idletime );
 
-    ad->attributes->trigger.counter    = counter->counter;
-    ad->attributes->trigger.value_type = XSyncAbsolute;
-    ad->attributes->trigger.test_type  = XSyncPositiveComparison;
-    ad->attributes->trigger.wait_value = value[1];
-    ad->attributes->delta              = value[0];
+    itd->attributes->trigger.counter    = counter->counter;
+    itd->attributes->trigger.value_type = XSyncAbsolute;
+    itd->attributes->trigger.test_type  = XSyncPositiveComparison;
+    itd->attributes->trigger.wait_value = value[1];
+    itd->attributes->delta              = value[0];
 
-    *(ad->alarm) = XSyncCreateAlarm ( ad->dpy, *(ad->flags), ad->attributes );
+    itd->alarm = XSyncCreateAlarm ( itd->dpy, itd->flags, itd->attributes );
 }
 
 long XSyncValueToLong ( XSyncValue *value ) {
