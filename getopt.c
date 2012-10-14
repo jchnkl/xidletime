@@ -47,16 +47,15 @@ void getoptions ( Options * options, int argc, char ** argv ) {
 
        if ( c == 0 ) { choice = option_index; } else { choice = c; }
 
-       // strdup is ok here: this will be only called once at program start
        switch ( choice ) {
            case   0:
            case 't': options->idletime      = strtol ( optarg, NULL, 10 ); break;
            case   1:
-           case 'b': options->busName       = strdup ( optarg ); break;
+           case 'b': options->busName       = optarg; break;
            case   2:
-           case 'o': options->objectPath    = strdup ( optarg ); break;
+           case 'o': options->objectPath    = optarg; break;
            case   3:
-           case 'i': options->interfaceName = strdup ( optarg ); break;
+           case 'i': options->interfaceName = optarg; break;
            case '?': break;
            default: break;
        }
