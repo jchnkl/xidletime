@@ -8,6 +8,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
+#include "alarm.h"
 #include "kmeans.h"
 
 typedef unsigned  int uint;
@@ -41,21 +42,6 @@ typedef struct groupData
 static
 void initGroups ( groupData * gd );
 
-typedef struct alarmData
-    { Display * dpy
-    ; ulong * flags
-    ; XSyncAlarmAttributes * attributes
-    ; XSyncAlarm * alarm
-    ; int * major
-    ; int * minor
-    ; int * ev_base
-    ; int * err_base
-    ; int * idletime
-    ;
-    } alarmData;
-
-static
-void initAlarm ( alarmData * ad );
 
 int main ( int argc, char ** argv ) {
 
@@ -264,36 +250,4 @@ void initGroups ( groupData * gd ) {
 
         seedGroup ( &(gd->group[i]), gd->seed[i] );
     }
-}
-
-static
-void initAlarm ( alarmData * ad ) {
-    int i, listCount = 0;
-    XSyncSystemCounter * sysCounter = NULL, * counter = NULL;
-    XSyncValue value[2];
-
-    ad->dpy = XOpenDisplay ("");
-    Window root = DefaultRootWindow ( ad->dpy );
-    XSelectInput ( ad->dpy, root, XSyncAlarmNotifyMask );
-    XSyncInitialize ( ad->dpy, ad->major, ad->minor );
-    XSyncQueryExtension ( ad->dpy , ad->ev_base , ad->err_base );
-
-    sysCounter = XSyncListSystemCounters ( ad->dpy, &listCount );
-
-    for ( i = 0; i < listCount; i++ ) {
-        if ( 0 == strcmp ( sysCounter[i].name, "IDLETIME" ) ) {
-            counter = &sysCounter[i];
-        }
-    }
-
-    XSyncIntToValue ( &value[0], 0 );
-    XSyncIntToValue ( &value[1], *(ad->idletime) );
-
-    ad->attributes->trigger.counter    = counter->counter;
-    ad->attributes->trigger.value_type = XSyncAbsolute;
-    ad->attributes->trigger.test_type  = XSyncPositiveComparison;
-    ad->attributes->trigger.wait_value = value[1];
-    ad->attributes->delta              = value[0];
-
-    *(ad->alarm) = XSyncCreateAlarm ( ad->dpy, *(ad->flags), ad->attributes );
 }
