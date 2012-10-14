@@ -136,7 +136,7 @@ int main ( int argc, char ** argv ) {
                 fprintf ( stderr, "Reset\n" );
                 attributes.trigger.test_type = XSyncPositiveComparison;
 
-                if ( lastEventTime != 0 && lastEventTime < alarmEvent->time ) {
+                if ( lastEventTime != alarmEvent->time ) {
 
                     uint newtime = 0;
                     uint time = alarmEvent->time - lastEventTime;
@@ -175,7 +175,8 @@ int main ( int argc, char ** argv ) {
                 }
 
             } else {
-                fprintf ( stderr, "Idle\n" );
+                if ( lastEventTime != alarmEvent->time )
+                    fprintf ( stderr, "Idle\n" );
                 attributes.trigger.test_type = XSyncNegativeComparison;
             }
 
