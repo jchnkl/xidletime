@@ -1,4 +1,4 @@
-#include "kMeans.h"
+#include "kmeans.h"
 
 #include <stdio.h>
 #include <stdlib.h>

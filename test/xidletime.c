@@ -8,7 +8,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
-#include "kMeans.h"
+#include "kmeans.h"
 
 typedef unsigned  int uint;
 typedef unsigned long ulong;
