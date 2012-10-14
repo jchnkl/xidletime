@@ -2,6 +2,12 @@
 
 #include <string.h>
 
+long XSyncValueToLong ( XSyncValue *value ) {
+    return ( (long) XSyncValueHigh32 ( *value ) << 32
+            | XSyncValueLow32 ( *value )
+           );
+}
+
 void initIdleTimer ( IdleTimerData * itd ) {
     int i, listCount = 0;
     XSyncSystemCounter * sysCounter = NULL, * counter = NULL;
@@ -33,8 +39,3 @@ void initIdleTimer ( IdleTimerData * itd ) {
     itd->alarm = XSyncCreateAlarm ( itd->dpy, itd->flags, itd->attributes );
 }
 
-long XSyncValueToLong ( XSyncValue *value ) {
-    return ( (long) XSyncValueHigh32 ( *value ) << 32
-            | XSyncValueLow32 ( *value )
-           );
-}
