@@ -20,4 +20,6 @@ typedef struct alarmData
 
 void initAlarm ( alarmData * ad );
 
+long XSyncValueToLong ( XSyncValue *value );
+
 #endif

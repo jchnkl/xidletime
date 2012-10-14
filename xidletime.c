@@ -24,8 +24,6 @@ typedef struct signalData
 
 signalData globalSignalData;
 
-long XSyncValueToLong ( XSyncValue *value );
-
 static void installSignalHandler ( int nsignals, int * signals );
 
 static void signalHandler ( int sig, siginfo_t * siginfo, void * context );
@@ -180,12 +178,6 @@ int main ( int argc, char ** argv ) {
 
     return 0;
 
-}
-
-long XSyncValueToLong ( XSyncValue *value ) {
-    return ( (long) XSyncValueHigh32 ( *value ) << 32
-            | XSyncValueLow32 ( *value )
-           );
 }
 
 static void installSignalHandler ( int nsignals, int * signals ) {

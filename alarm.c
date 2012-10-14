@@ -32,3 +32,9 @@ void initAlarm ( alarmData * ad ) {
 
     *(ad->alarm) = XSyncCreateAlarm ( ad->dpy, *(ad->flags), ad->attributes );
 }
+
+long XSyncValueToLong ( XSyncValue *value ) {
+    return ( (long) XSyncValueHigh32 ( *value ) << 32
+            | XSyncValueLow32 ( *value )
+           );
+}
