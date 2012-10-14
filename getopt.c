@@ -32,10 +32,12 @@ void getoptions ( Options * options, int argc, char ** argv ) {
    int c = 0, choice, option_index;
 
    static struct option long_options[] = {
-       {"idletime",      required_argument, 0, 0 },
-       {"busname",       required_argument, 0, 0 },
-       {"objectpath",    required_argument, 0, 0 },
-       {"interfacename", required_argument, 0, 0 },
+       {"idletime",      required_argument, 0, 'i' },
+       {"idlefile",      required_argument, 0, 'f' },
+       {"timeoutfile",   required_argument, 0, 't' },
+       {"busname",       required_argument, 0, 'b' },
+       {"objectpath",    required_argument, 0, 'o' },
+       {"interfacename", required_argument, 0, 'n' },
        {0,               0,                 0, 0 }
    };
 
@@ -43,20 +45,25 @@ void getoptions ( Options * options, int argc, char ** argv ) {
 
    while ( c != -1 ) {
        option_index = 0;
-       c = getopt_long ( argc, argv, "t:b:o:i:", long_options, &option_index );
+       c = getopt_long ( argc, argv, "i:f:t:b:o:n:", long_options, &option_index );
 
        if ( c == 0 ) { choice = option_index; } else { choice = c; }
 
        switch ( choice ) {
            case   0:
-           case 't': options->idletime      = strtol ( optarg, NULL, 10 ); break;
+           case 'i': options->idletime      = strtol ( optarg, NULL, 10 ); break;
            case   1:
-           case 'b': options->busName       = optarg; break;
+           case 'f': options->idlefile      = optarg; break;
            case   2:
-           case 'o': options->objectPath    = optarg; break;
+           case 't': options->timeoutfile   = optarg; break;
            case   3:
-           case 'i': options->interfaceName = optarg; break;
-           case '?': break;
+           case 'b': options->busName       = optarg; break;
+           case   4:
+           case 'o': options->objectPath    = optarg; break;
+           case   5:
+           case 'n': options->interfaceName = optarg; break;
+           case '?':
+           case ':': usage ( argv[0] );
            default: break;
        }
    }

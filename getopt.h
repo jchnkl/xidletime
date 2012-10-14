@@ -3,6 +3,8 @@
 
 typedef struct Options
     { unsigned int idletime
+    ; const char * idlefile
+    ; const char * timeoutfile
     ; const char * busName
     ; const char * objectPath
     ; const char * interfaceName
