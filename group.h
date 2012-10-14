@@ -1,5 +1,5 @@
-#ifndef __ALARM_H
-#define __ALARM_H
+#ifndef __GROUP_H
+#define __GROUP_H
 
 #include "kmeans.h"
 
