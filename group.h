@@ -3,7 +3,7 @@
 
 #include "kmeans.h"
 
-typedef struct groupData
+typedef struct GroupData
     { int (* init) (int, int)
     ; int ngroups
     ; group_t * group
@@ -11,8 +11,8 @@ typedef struct groupData
     ; cmp_type_t * comp
     ; const char ** seed
     ;
-    } groupData;
+    } GroupData;
 
-void initGroups ( groupData * gd );
+void initGroups ( GroupData * gd );
 
 #endif

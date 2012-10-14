@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-void initGroups ( groupData * gd ) {
+void initGroups ( GroupData * gd ) {
     int i, k;
 
     memset ( gd->group, 0, gd->ngroups * sizeof ( group_t ) );

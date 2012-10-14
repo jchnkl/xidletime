@@ -16,7 +16,7 @@
 typedef unsigned  int uint;
 typedef unsigned long ulong;
 
-signalData globalSignalData;
+SignalData globalSignalData;
 
 static void signalHandler ( int, siginfo_t *, void * );
 
@@ -39,7 +39,7 @@ int main ( int argc, char ** argv ) {
         return (int)((double)myIdleTime * (double)m / (double)s);
     }
 
-    groupData gd; memset ( &gd, 0, sizeof ( groupData ) );
+    GroupData gd; memset ( &gd, 0, sizeof ( GroupData ) );
     gd.init = initMeans;
     gd.ngroups = 2;
     gd.group = group;
@@ -48,7 +48,7 @@ int main ( int argc, char ** argv ) {
     gd.seed = seed;
     initGroups ( &gd );
 
-    memset ( &globalSignalData, 0, sizeof ( signalData ) );
+    memset ( &globalSignalData, 0, sizeof ( SignalData ) );
     globalSignalData.ngroups = 2;
     globalSignalData.group = group;
     globalSignalData.seed = seed;
@@ -66,7 +66,7 @@ int main ( int argc, char ** argv ) {
     XSyncAlarm alarm;
     XSyncAlarmAttributes attributes;
 
-    alarmData ad; memset ( &ad, 0, sizeof ( alarmData ) );
+    AlarmData ad; memset ( &ad, 0, sizeof ( AlarmData ) );
     ad.flags = &flags;
     ad.attributes = &attributes;
     ad.alarm = &alarm;

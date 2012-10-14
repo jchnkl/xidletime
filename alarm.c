@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-void initAlarm ( alarmData * ad ) {
+void initAlarm ( AlarmData * ad ) {
     int i, listCount = 0;
     XSyncSystemCounter * sysCounter = NULL, * counter = NULL;
     XSyncValue value[2];

@@ -5,7 +5,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
-typedef struct alarmData
+typedef struct AlarmData
     { Display * dpy                     // ptr to display
     ; ulong * flags                     // flags for attributes
     ; XSyncAlarmAttributes * attributes // attributes
@@ -16,9 +16,9 @@ typedef struct alarmData
     ; int * err_base                    // offset for error
     ; int * idletime                    // timeout for idle alarm
     ;
-    } alarmData;
+    } AlarmData;
 
-void initAlarm ( alarmData * ad );
+void initAlarm ( AlarmData * ad );
 
 long XSyncValueToLong ( XSyncValue *value );
 
