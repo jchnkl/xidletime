@@ -1,5 +1,5 @@
-#ifndef __ALARM_H
-#define __ALARM_H
+#ifndef __IDLETIME_H
+#define __IDLETIME_H
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
