@@ -39,6 +39,8 @@ void getoptions ( Options * options, int argc, char ** argv ) {
        {0,               0,                 0, 0 }
    };
 
+   memset ( options, 0, sizeof ( Options ) );
+
    while ( c != -1 ) {
        option_index = 0;
        c = getopt_long ( argc, argv, "t:b:o:i:", long_options, &option_index );
