@@ -150,6 +150,7 @@ int main ( int argc, char ** argv ) {
                     // gnuplot:
                     // base=0.2
                     // plot [0:99] (-1.0 * log(100/base) / log(base)) + log(x) / log(base)
+
                     double base = strtod ( argv[1], NULL );
                     double prob = -1.0 * log(size[0]/base) / log(base)
                                 + log(class[0] + 1.0) / log(base);
@@ -244,9 +245,11 @@ void initGroups ( groupData * gd ) {
     for ( i = 0; i < gd->ngroups; i++ ) {
         gd->group[i].cmp_type = gd->comp[i];
         makeGroup ( &(gd->group[i]), gd->size[i] );
+
         for ( k = 0; k < gd->size[i]; k++ ) {
             gd->group[i].cluster[k].mean = gd->init ( k, gd->size[i] );
         }
+
         seedGroup ( &(gd->group[i]), gd->seed[i] );
     }
 }
