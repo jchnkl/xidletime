@@ -68,4 +68,12 @@ void getoptions ( Options * options, int argc, char ** argv ) {
        }
    }
 
+   if ( options->idlefile      == NULL
+     || options->timeoutfile   == NULL
+     || options->busName       == NULL
+     || options->objectPath    == NULL
+     || options->interfaceName == NULL
+      )
+       usage ( argv[0] );
+
 }
