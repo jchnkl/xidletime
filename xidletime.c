@@ -16,7 +16,7 @@
 typedef unsigned  int uint;
 typedef unsigned long ulong;
 
-SignalData globalSignalData;
+GroupData globalGroupData;
 
 static void signalHandler ( int, siginfo_t *, void * );
 
@@ -39,19 +39,14 @@ int main ( int argc, char ** argv ) {
         return (int)((double)myIdleTime * (double)m / (double)s);
     }
 
-    GroupData gd; memset ( &gd, 0, sizeof ( GroupData ) );
-    gd.init = initMeans;
-    gd.ngroups = 2;
-    gd.group = group;
-    gd.size = size;
-    gd.comp = comp;
-    gd.seed = seed;
-    initGroups ( &gd );
-
-    memset ( &globalSignalData, 0, sizeof ( SignalData ) );
-    globalSignalData.ngroups = 2;
-    globalSignalData.group = group;
-    globalSignalData.seed = seed;
+    memset ( &globalGroupData, 0, sizeof ( GroupData ) );
+    globalGroupData.init = initMeans;
+    globalGroupData.ngroups = 2;
+    globalGroupData.group = group;
+    globalGroupData.size = size;
+    globalGroupData.comp = comp;
+    globalGroupData.seed = seed;
+    initGroups ( &globalGroupData );
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
     installSignalHandler ( 3, signals, signalHandler );
@@ -181,15 +176,15 @@ static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
 
     switch (sig) {
         case SIGUSR1:
-            for ( g = 0; g < globalSignalData.ngroups; g++ ) {
-                printGroup ( &(globalSignalData.group[g]) );
+            for ( g = 0; g < globalGroupData.ngroups; g++ ) {
+                printGroup ( &(globalGroupData.group[g]) );
             }
             break;
 
         default:
-            for ( g = 0; g < globalSignalData.ngroups; g++ ) {
-                dumpGroup ( &(globalSignalData.group[g])
-                          ,   globalSignalData.seed[g]
+            for ( g = 0; g < globalGroupData.ngroups; g++ ) {
+                dumpGroup ( &(globalGroupData.group[g])
+                          ,   globalGroupData.seed[g]
                           );
             }
             exit ( EXIT_SUCCESS );
