@@ -1,8 +1,31 @@
 #include "getopt.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+
+static void usage ( const char * name ) {
+    int i, noptions = 6;
+    const char * options[] =
+        { "[-i|--idlefile]"
+        , "[-f|--idlefile]"
+        , "[-t|--timeoutfile]"
+        , "[-b|--busname]"
+        , "[-o|--objectpath]"
+        , "[-n|--interfacename]"
+        };
+
+    fprintf ( stdout, "Usage: %s", name );
+
+    for ( i = 0; i < noptions; i++ ) {
+        fprintf ( stdout, " %s", options[i] );
+    }
+
+    fprintf ( stdout, "\n" );
+
+    exit ( EXIT_FAILURE );
+}
 
 void getoptions ( Options * options, int argc, char ** argv ) {
 
