@@ -159,6 +159,18 @@ int main ( int argc, char ** argv ) {
 
                     newtime = nwIdleTime * weight * prob;
 
+#ifdef DEBUG
+                    fprintf ( stderr
+                            , "time: %u\tclass[0]: %i\tclass[1]: %i\nprob: %f\tweight: %f\tnewtime: %i\n"
+                            , time
+                            , class[0]
+                            , class[1]
+                            , prob
+                            , weight
+                            , newtime
+                            );
+#endif
+
                     if ( newtime >= myIdleTime ) {
                         nwIdleTime = newtime;
 
