@@ -10,9 +10,9 @@
 
 #include "alarm.h"
 #include "group.h"
-#include "signal.h"
-#include "getopt.h"
+#include "GetOptions.h"
 #include "kmeans.h"
+#include "SignalHandler.h"
 
 typedef unsigned  int uint;
 typedef unsigned long ulong;

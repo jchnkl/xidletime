@@ -1,5 +1,5 @@
-#ifndef __SIGNAL_H
-#define __SIGNAL_H
+#ifndef __SIGNALHANDLER_H
+#define __SIGNALHANDLER_H
 
 #include <signal.h>
 #include "kmeans.h"
