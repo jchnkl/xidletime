@@ -9,6 +9,7 @@
 #include <X11/extensions/sync.h>
 
 #include "alarm.h"
+#include "group.h"
 #include "kmeans.h"
 
 typedef unsigned  int uint;
@@ -28,20 +29,6 @@ long XSyncValueToLong ( XSyncValue *value );
 static void installSignalHandler ( int nsignals, int * signals );
 
 static void signalHandler ( int sig, siginfo_t * siginfo, void * context );
-
-typedef struct groupData
-    { int (* init) (int, int)
-    ; int ngroups
-    ; group_t * group
-    ; int * size
-    ; cmp_type_t * comp
-    ; const char ** seed
-    ;
-    } groupData;
-
-static
-void initGroups ( groupData * gd );
-
 
 int main ( int argc, char ** argv ) {
 
@@ -231,23 +218,5 @@ static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
                           );
             }
             exit ( EXIT_SUCCESS );
-    }
-}
-
-static
-void initGroups ( groupData * gd ) {
-    int i, k;
-
-    memset ( gd->group, 0, gd->ngroups * sizeof ( group_t ) );
-
-    for ( i = 0; i < gd->ngroups; i++ ) {
-        gd->group[i].cmp_type = gd->comp[i];
-        makeGroup ( &(gd->group[i]), gd->size[i] );
-
-        for ( k = 0; k < gd->size[i]; k++ ) {
-            gd->group[i].cluster[k].mean = gd->init ( k, gd->size[i] );
-        }
-
-        seedGroup ( &(gd->group[i]), gd->seed[i] );
     }
 }
