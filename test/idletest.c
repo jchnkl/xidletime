@@ -93,9 +93,6 @@ int main ( int argc, char ** argv ) {
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
     installSignalHandler ( 3, signals );
 
-    XEvent xEvent;
-    Time lastEventTime = 0;
-
     ulong flags = XSyncCACounter
                 | XSyncCAValueType
                 | XSyncCATestType
@@ -121,6 +118,9 @@ int main ( int argc, char ** argv ) {
     int class[2];
     class[0] = size[0] - 1;
     class[1] = size[1] - 1;
+
+    XEvent xEvent;
+    Time lastEventTime = 0;
 
     while ( 1 ) {
         XNextEvent ( ad.dpy, &xEvent );
