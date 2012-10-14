@@ -19,20 +19,27 @@ typedef unsigned long ulong;
 
 GroupData globalGroupData;
 
+typedef struct CallbackData
+    { Options   * opts
+    ; GroupData * gd
+    ; int newIdletime
+    ; int class[2]
+    ;
+    } CallbackData;
+
+static void idleTimerCallback
+    ( IdleT
+    , IdleTimerData *
+    , XSyncAlarmNotifyEvent *
+    , void *
+    );
+
 static void signalHandler ( int, siginfo_t *, void * );
 
 int main ( int argc, char ** argv ) {
 
-    int major = 0, minor = 0
-      , ev_base = 0, err_base = 0
-      , myIdleTime, nwIdleTime
-      ;
-
     Options options;
     getoptions ( &options, argc, argv );
-
-    myIdleTime = options.idletime * 1000;
-    nwIdleTime = myIdleTime;
 
     const char * seed[2];
     seed[0] = options.idlefile;
@@ -42,7 +49,7 @@ int main ( int argc, char ** argv ) {
     int size[] = { 100, 10 };
     cmp_type_t comp[] = { MEAN, FILL };
     int initMeans ( int m, int s ) {
-        return (int)((double)myIdleTime * (double)m / (double)s);
+        return (int)((double)(options.idletime * 1000) * (double)m / (double)s);
     }
 
     memset ( &globalGroupData, 0, sizeof ( GroupData ) );
@@ -64,104 +71,23 @@ int main ( int argc, char ** argv ) {
                 | XSyncCADelta
                 ;
 
-    XSyncAlarm alarm;
     XSyncAlarmAttributes attributes;
 
-    AlarmData ad; memset ( &ad, 0, sizeof ( AlarmData ) );
-    ad.flags = &flags;
-    ad.attributes = &attributes;
-    ad.alarm = &alarm;
-    ad.major = &major;
-    ad.minor = &minor;
-    ad.ev_base = &ev_base;
-    ad.err_base = &err_base;
-    ad.idletime = &myIdleTime;
+    IdleTimerData itd; memset ( &itd, 0, sizeof ( IdleTimerData ) );
+    itd.flags = flags;
+    itd.attributes = &attributes;
+    itd.idletime = options.idletime * 1000;
 
-    initAlarm ( &ad );
+    initIdleTimer ( &itd );
 
-    int class[2];
-    class[0] = size[0] - 1;
-    class[1] = size[1] - 1;
+    CallbackData cd; memset ( &cd, 0, sizeof ( CallbackData ) );
+    cd.opts = &options;
+    cd.gd   = &globalGroupData;
+    cd.newIdletime = options.idletime * 1000;
+    cd.class[0] = size[0] - 1;
+    cd.class[1] = size[1] - 1;
 
-    XEvent xEvent;
-    XSyncAlarmNotifyEvent * alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
-    Time lastEventTime = 0;
-
-    while ( 1 ) {
-        XNextEvent ( ad.dpy, &xEvent );
-
-        if ( xEvent.type != ev_base + XSyncAlarmNotify ) continue;
-
-        if ( alarmEvent->alarm == alarm ) {
-            if ( XSyncValueLessThan ( alarmEvent->counter_value
-                                    , alarmEvent->alarm_value
-                                    )
-               ) {
-                fprintf ( stderr, "Reset\n" );
-                attributes.trigger.test_type = XSyncPositiveComparison;
-
-                if ( lastEventTime != alarmEvent->time ) {
-
-                    uint newtime = 0;
-                    uint time = alarmEvent->time - lastEventTime;
-
-                    class[0] = addValue ( &group[0], &time );
-
-                    FILE * stream = fopen ( seed[0], "a" );
-                    fwrite ( &time, sizeof ( uint ), 1, stream );
-                    fclose ( stream );
-
-                    // gnuplot:
-                    // base=0.2
-                    // plot [0:99] (-1.0 * log(100/base) / log(base)) + log(x) / log(base)
-
-                    double base = strtod ( argv[1], NULL );
-                    double prob = -1.0 * log(size[0]/base) / log(base)
-                                + log(class[0] + 1.0) / log(base);
-
-                    double weight = (class[1] + 1.0) / (double)size[1];
-
-                    newtime = nwIdleTime * weight * prob;
-
-#ifdef DEBUG
-                    fprintf ( stderr
-                            , "time: %u\tclass[0]: %i\tclass[1]: %i\nprob: %f\tweight: %f\tnewtime: %i\n"
-                            , time
-                            , class[0]
-                            , class[1]
-                            , prob
-                            , weight
-                            , newtime
-                            );
-#endif
-
-                    if ( newtime >= myIdleTime ) {
-                        nwIdleTime = newtime;
-
-                        class[1] = addValue ( &group[1], &newtime );
-
-                        FILE * stream = fopen ( seed[1], "a" );
-                        fwrite ( &newtime, sizeof ( uint ), 1, stream );
-                        fclose ( stream );
-
-                        XSyncValue value;
-                        XSyncIntToValue ( &value, newtime );
-                        attributes.trigger.wait_value = value;
-                    }
-
-                }
-
-            } else {
-                if ( lastEventTime != alarmEvent->time )
-                    fprintf ( stderr, "Idle\n" );
-                attributes.trigger.test_type = XSyncNegativeComparison;
-            }
-
-            XSyncChangeAlarm ( ad.dpy, alarm, flags, &attributes );
-            lastEventTime = alarmEvent->time;
-        }
-
-    }
+    runTimer ( &itd, idleTimerCallback, (void *)&cd );
 
     dumpGroup ( &group[0], seed[0] );
     finalizeGroup ( &group[0] );
@@ -173,10 +99,77 @@ int main ( int argc, char ** argv ) {
 
 }
 
+static void idleTimerCallback
+    ( IdleT idlet
+    , IdleTimerData * itd
+    , XSyncAlarmNotifyEvent * alarmEvent
+    , void * data
+    ) {
+
+    if ( idlet == Reset ) {
+        fprintf ( stderr, "Reset\n" );
+
+        CallbackData *   cd = (CallbackData *) data;
+        Options      * opts =      (Options *) cd->opts;
+        GroupData    *   gd =    (GroupData *) cd->gd;
+
+        uint time = alarmEvent->time - itd->lastEventTime;
+
+        cd->class[0] = addValue ( &(gd->group[0]), &time );
+
+        FILE * stream = fopen ( gd->seed[0], "a" );
+        fwrite ( &time, sizeof ( uint ), 1, stream );
+        fclose ( stream );
+
+        // gnuplot:
+        // base=0.2
+        // plot [0:99] (-1.0 * log(100/base) / log(base)) + log(x) / log(base)
+
+        // double base = strtod ( argv[1], NULL );
+        double base = opts->base;
+        double prob = -1.0 * log(gd->size[0]/base) / log(base)
+                    + log(cd->class[0] + 1.0) / log(base);
+
+        double weight = (cd->class[1] + 1.0) / (double)(gd->size[1]);
+
+        int newtime = (double)(cd->newIdletime) * weight * prob;
+
+        if ( newtime >= itd->idletime ) {
+            cd->newIdletime = newtime;
+
+            cd->class[1] = addValue ( &(gd->group[1]), (uint *) &newtime );
+
+            FILE * stream = fopen ( gd->seed[1], "a" );
+            fwrite ( &newtime, sizeof ( uint ), 1, stream );
+            fclose ( stream );
+
+            XSyncValue value;
+            XSyncIntToValue ( &value, newtime );
+            itd->attributes->trigger.wait_value = value;
+        }
+
+#ifdef DEBUG_CALLBACK
+    fprintf ( stderr
+            , "time: %u\tclass[0]: %i\tclass[1]: %i\nprob: %f\tweight: %f\tnewtime: %i\n"
+            , time
+            , cd->class[0]
+            , cd->class[1]
+            , prob
+            , weight
+            , newtime
+            );
+#endif
+
+    } else {
+        fprintf ( stderr, "Idle\n" );
+    }
+
+}
+
 static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
     int g;
 
-#ifdef DEBUG
+#ifdef DEBUG_SIGNALHANDLER
     fprintf ( stderr, "Caught signal %d\n", sig );
 #endif
 
