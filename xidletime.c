@@ -8,7 +8,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
-#include "IdleTime.h"
+#include "IdleTimer.h"
 #include "group.h"
 #include "GetOptions.h"
 #include "kmeans.h"
