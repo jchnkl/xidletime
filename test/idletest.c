@@ -120,14 +120,13 @@ int main ( int argc, char ** argv ) {
     class[1] = size[1] - 1;
 
     XEvent xEvent;
+    XSyncAlarmNotifyEvent * alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
     Time lastEventTime = 0;
 
     while ( 1 ) {
         XNextEvent ( ad.dpy, &xEvent );
 
         if ( xEvent.type != ev_base + XSyncAlarmNotify ) continue;
-
-        XSyncAlarmNotifyEvent * alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
 
         if ( alarmEvent->alarm == alarm ) {
             if ( XSyncValueLessThan ( alarmEvent->counter_value
