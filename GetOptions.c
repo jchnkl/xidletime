@@ -9,9 +9,10 @@ static void usage ( const char * name ) {
     int i, noptions = 6;
     const char * options[] =
         { "[-i|--idlefile]"
+        , "[-b|--base]"
         , "[-f|--idlefile]"
         , "[-t|--timeoutfile]"
-        , "[-b|--busname]"
+        , "[-u|--busname]"
         , "[-o|--objectpath]"
         , "[-n|--interfacename]"
         };
@@ -33,9 +34,10 @@ void getoptions ( Options * options, int argc, char ** argv ) {
 
    static struct option long_options[] = {
        {"idletime",      required_argument, 0, 'i' },
+       {"base",          required_argument, 0, 'b' },
        {"idlefile",      required_argument, 0, 'f' },
        {"timeoutfile",   required_argument, 0, 't' },
-       {"busname",       required_argument, 0, 'b' },
+       {"busname",       required_argument, 0, 'u' },
        {"objectpath",    required_argument, 0, 'o' },
        {"interfacename", required_argument, 0, 'n' },
        {0,               0,                 0, 0 }
@@ -45,7 +47,7 @@ void getoptions ( Options * options, int argc, char ** argv ) {
 
    while ( c != -1 ) {
        option_index = 0;
-       c = getopt_long ( argc, argv, "i:f:t:b:o:n:", long_options, &option_index );
+       c = getopt_long ( argc, argv, "i:b:f:t:u:o:n:", long_options, &option_index );
 
        if ( c == 0 ) { choice = option_index; } else { choice = c; }
 
@@ -53,14 +55,16 @@ void getoptions ( Options * options, int argc, char ** argv ) {
            case   0:
            case 'i': options->idletime      = strtol ( optarg, NULL, 10 ); break;
            case   1:
-           case 'f': options->idlefile      = optarg; break;
+           case 'b': options->base          = strtod ( optarg, NULL ); break;
            case   2:
-           case 't': options->timeoutfile   = optarg; break;
+           case 'f': options->idlefile      = optarg; break;
            case   3:
-           case 'b': options->busName       = optarg; break;
+           case 't': options->timeoutfile   = optarg; break;
            case   4:
-           case 'o': options->objectPath    = optarg; break;
+           case 'u': options->busName       = optarg; break;
            case   5:
+           case 'o': options->objectPath    = optarg; break;
+           case   6:
            case 'n': options->interfaceName = optarg; break;
            case '?':
            case ':': usage ( argv[0] );
