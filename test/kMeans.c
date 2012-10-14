@@ -318,9 +318,10 @@ void printGroup ( group_t * group ) {
     struct winsize ws;
     ioctl ( 0, TIOCGWINSZ, &ws );
 
+    fprintf ( stderr, "group with size %u, sorted by %i\n", group->size, group->cmp_type );
     for ( i = 0; i < group->size; i++ ) {
         // fprintf ( stderr, "address: %u\t", &group->cluster[i] );
-        fprintf ( stderr, "group: %u\t", i );
+        fprintf ( stderr, "cluster: %u\t", i );
         fprintf ( stderr, "mean: %u\t", group->cluster[i].mean );
         fprintf ( stderr, "fillcount: %u\n", group->cluster[i].fillcount );
 
