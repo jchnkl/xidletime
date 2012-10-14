@@ -11,6 +11,7 @@
 #include "alarm.h"
 #include "group.h"
 #include "signal.h"
+#include "getopt.h"
 #include "kmeans.h"
 
 typedef unsigned  int uint;
@@ -24,13 +25,18 @@ int main ( int argc, char ** argv ) {
 
     int major = 0, minor = 0
       , ev_base = 0, err_base = 0
-      , myIdleTime = strtol ( argv[2], NULL, 10 ) * 1000
-      , nwIdleTime = myIdleTime
+      , myIdleTime, nwIdleTime
       ;
 
+    Options options;
+    getoptions ( &options, argc, argv );
+
+    myIdleTime = options.idletime * 1000;
+    nwIdleTime = myIdleTime;
+
     const char * seed[2];
-    seed[0] = argv[3]; // idleFile
-    seed[1] = argv[4]; // timeoutFile
+    seed[0] = options.idlefile;
+    seed[1] = options.timeoutfile;
 
     group_t group[2];
     int size[] = { 100, 10 };
