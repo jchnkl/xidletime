@@ -10,23 +10,15 @@
 
 #include "alarm.h"
 #include "group.h"
+#include "signal.h"
 #include "kmeans.h"
 
 typedef unsigned  int uint;
 typedef unsigned long ulong;
 
-typedef struct signalData
-    { int ngroups
-    ; group_t * group
-    ; const char ** seed
-    ;
-    } signalData;
-
 signalData globalSignalData;
 
-static void installSignalHandler ( int nsignals, int * signals );
-
-static void signalHandler ( int sig, siginfo_t * siginfo, void * context );
+static void signalHandler ( int, siginfo_t *, void * );
 
 int main ( int argc, char ** argv ) {
 
@@ -62,7 +54,7 @@ int main ( int argc, char ** argv ) {
     globalSignalData.seed = seed;
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
-    installSignalHandler ( 3, signals );
+    installSignalHandler ( 3, signals, signalHandler );
 
     ulong flags = XSyncCACounter
                 | XSyncCAValueType
@@ -180,21 +172,12 @@ int main ( int argc, char ** argv ) {
 
 }
 
-static void installSignalHandler ( int nsignals, int * signals ) {
-    int i;
-    struct sigaction sa;
-
-    memset ( &sa, 0, sizeof ( struct sigaction ) );
-    sa.sa_flags     = SA_SIGINFO;
-    sa.sa_sigaction = signalHandler;
-
-    for ( i = 0; i < nsignals; i++ ) sigaction ( signals[i],  &sa, NULL );
-}
-
 static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
     int g;
 
+#ifdef DEBUG
     fprintf ( stderr, "Caught signal %d\n", sig );
+#endif
 
     switch (sig) {
         case SIGUSR1:
