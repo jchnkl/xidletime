@@ -1,5 +1,5 @@
-#ifndef __GETOPT_H
-#define __GETOPT_H
+#ifndef __GETOPTIONS_H
+#define __GETOPTIONS_H
 
 typedef struct Options
     { unsigned int idletime
