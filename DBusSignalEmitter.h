@@ -5,7 +5,7 @@
 
 #include "SignalEmitter.h"
 
-typedef struct
+typedef struct DBusConfig
     { const char     * busName
     ; const char     * objectPath
     ; const char     * interfaceName
