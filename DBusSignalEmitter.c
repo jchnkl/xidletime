@@ -46,7 +46,6 @@ void finalizeDBus ( DBusConfig * dbusconfig ) {
 int dbusEmitSignal ( DBusConfig * dbusconfig ) {
 
     DBusMessage * msg;
-    int           ret = 0;
     dbus_uint32_t serial = 0; // unique number to associate replies with requests
 
     // create a signal and check for errors
@@ -78,8 +77,6 @@ static int _dbusEmitSignal ( SignalEmitter * se, char * name ) {
 }
 
 int getSignalEmitter ( DBusConfig * dbusconfig, SignalEmitter * signalemitter ) {
-
-    int ret = 0;
     if ( dbusconfig == NULL ) return -1;
 
     signalemitter->data = dbusconfig;
