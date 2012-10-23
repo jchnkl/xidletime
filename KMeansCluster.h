@@ -15,7 +15,7 @@ typedef struct cluster_t {
 } cluster_t;
 
 typedef struct group_t {
-    const char * path;
+    const char * seed;
     unsigned int changed;
     unsigned int size;
     cmp_type_t cmp_type;
@@ -39,7 +39,7 @@ int makeGroups
     , const      char ** seed
     );
 
-int seedGroup ( group_t * group, const char * path );
+int seedGroup ( group_t * group, const char * seed );
 
 int finalizeGroup ( group_t * group );
 

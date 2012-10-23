@@ -44,7 +44,7 @@ int makeGroup
     for ( k = 0; k < size; k++ ) { group->cluster[k].mean = init ( k, size ); }
 
     if ( seed != NULL ) {
-        group->path = seed;
+        group->seed = seed;
         seedGroup ( group, seed );
     }
 
@@ -76,7 +76,7 @@ int makeGroups
 
 }
 
-int seedGroup ( group_t * group, const char * path ) {
+int seedGroup ( group_t * group, const char * seed ) {
 
     unsigned int   i;
     long           length;
@@ -84,12 +84,12 @@ int seedGroup ( group_t * group, const char * path ) {
     FILE         * stream;
     unsigned int * values;
 
-    if ( path != NULL ) {
-        group->path = path;
+    if ( seed != NULL ) {
+        group->seed = seed;
 #ifdef DEBUG
-        fprintf ( stderr, "open: %s\n", path );
+        fprintf ( stderr, "open: %s\n", seed );
 #endif
-        stream = fopen ( path, "a+" );
+        stream = fopen ( seed, "a+" );
     }
 
     if ( stream != NULL ) {
@@ -136,11 +136,11 @@ int finalizeGroup ( group_t * group ) {
     int i;
     FILE * stream = NULL;
 
-    if ( group->path != NULL ) {
+    if ( group->seed != NULL ) {
 #ifdef DEBUG
-        fprintf ( stderr, "open: %s\n", group->path );
+        fprintf ( stderr, "open: %s\n", group->seed );
 #endif
-        // stream = fopen ( group->path, "w+" );
+        // stream = fopen ( group->seed, "w+" );
     }
 
     for ( i = 0; i < group->size; i++ ) {
@@ -173,7 +173,7 @@ int finalizeGroup ( group_t * group ) {
 
 void dumpGroup ( group_t * group, const char * groupFile ) {
     int i;
-    FILE * stream = fopen ( group->path, "w+" );
+    FILE * stream = fopen ( group->seed, "w+" );
 
     for ( i = 0; i < group->size; i++ ) {
         bucket_t * bucket = group->cluster[i].bucket;
@@ -235,8 +235,8 @@ int addValue ( group_t * group, unsigned int * value ) {
 #endif
     updateGroup ( group );
     /*
-    if ( group->path != NULL ) {
-        FILE * stream = fopen ( group->path, "a" );
+    if ( group->seed != NULL ) {
+        FILE * stream = fopen ( group->seed, "a" );
         fwrite ( value, sizeof ( unsigned int ), 1, stream );
         fclose ( stream );
     }
