@@ -20,10 +20,10 @@ typedef unsigned long ulong;
 GroupData globalGroupData;
 
 typedef struct CallbackData
-    { Options   * opts
-    ; GroupData * gd
-    ; int newIdletime
-    ; int class[2]
+    { Options       * options
+    ; GroupData     * groupdata
+    ; int             newIdletime
+    ; int             class[2]
     ;
     } CallbackData;
 
@@ -38,8 +38,12 @@ static void signalHandler ( int, siginfo_t *, void * );
 
 int main ( int argc, char ** argv ) {
 
+    CallbackData cd; memset ( &cd, 0, sizeof ( CallbackData ) );
+
     Options options;
     getoptions ( &options, argc, argv );
+    cd.options = &options;
+    cd.newIdletime = options.idletime * 1000;
 
     const char * seed[2];
     seed[0] = options.idlefile;
@@ -61,6 +65,10 @@ int main ( int argc, char ** argv ) {
     globalGroupData.seed = seed;
     initGroups ( &globalGroupData );
 
+    cd.class[0]  = size[0] - 1;
+    cd.class[1]  = size[1] - 1;
+    cd.groupdata = &globalGroupData;
+
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
     installSignalHandler ( 3, signals, signalHandler );
 
@@ -80,12 +88,6 @@ int main ( int argc, char ** argv ) {
 
     initIdleTimer ( &itd );
 
-    CallbackData cd; memset ( &cd, 0, sizeof ( CallbackData ) );
-    cd.opts = &options;
-    cd.gd   = &globalGroupData;
-    cd.newIdletime = options.idletime * 1000;
-    cd.class[0] = size[0] - 1;
-    cd.class[1] = size[1] - 1;
 
     runTimer ( &itd, (void *)&cd, idleTimerCallback );
 
@@ -110,8 +112,8 @@ static void idleTimerCallback
         fprintf ( stderr, "Reset\n" );
 
         CallbackData *   cd = (CallbackData *) data;
-        Options      * opts =      (Options *) cd->opts;
-        GroupData    *   gd =    (GroupData *) cd->gd;
+        Options      * opts =      (Options *) cd->options;
+        GroupData    *   gd =    (GroupData *) cd->groupdata;
 
         uint time = alarmEvent->time - itd->lastEventTime;
 
