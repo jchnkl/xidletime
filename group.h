@@ -7,12 +7,10 @@ typedef struct GroupData
     { int (* init) (int, int)
     ; int ngroups
     ; GroupT * group
-    ; int * size
+    ; unsigned int * size
     ; CmpTypeT * comp
     ; const char ** seed
     ;
     } GroupData;
-
-void initGroups ( GroupData * gd );
 
 #endif

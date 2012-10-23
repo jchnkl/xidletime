@@ -58,6 +58,11 @@ int main ( int argc, char ** argv ) {
         return (int)((double)(options.idletime * 1000) * (double)m / (double)s);
     }
 
+    GroupsT groups;
+    groups.ngroups = 2;
+    groups.groups  = &group[0];
+    makeGroups ( initMeans, &groups, size, comp, seed );
+
     memset ( &globalGroupData, 0, sizeof ( GroupData ) );
     globalGroupData.init = initMeans;
     globalGroupData.ngroups = 2;
@@ -65,7 +70,6 @@ int main ( int argc, char ** argv ) {
     globalGroupData.size = size;
     globalGroupData.comp = comp;
     globalGroupData.seed = seed;
-    initGroups ( &globalGroupData );
 
     cd.class[0]  = size[0] - 1;
     cd.class[1]  = size[1] - 1;
