@@ -9,21 +9,20 @@
 #include <X11/extensions/sync.h>
 
 #include "IdleTimer.h"
-#include "group.h"
 #include "GetOptions.h"
 #include "KMeansCluster.h"
 #include "SignalHandler.h"
 #include "DBusSignalEmitter.h"
 
-
-GroupData globalGroupData;
+// for signal handler
+GroupsT * globalGroups;
 
 typedef struct CallbackData
-    { Options       * options
-    ; SignalEmitter * signalemitter
-    ; GroupData     * groupdata
-    ; int             newIdletime
-    ; int             class[2]
+    { Options       *  options
+    ; SignalEmitter *  signalemitter
+    ; GroupsT       *  groups
+    ; int              newIdletime
+    ; int              class[2]
     ;
     } CallbackData;
 
@@ -60,18 +59,11 @@ int main ( int argc, char ** argv ) {
     groups.ngroups = 2;
     groups.groups  = &group[0];
     makeGroups ( initMeans, &groups, size, comp, seed );
-
-    memset ( &globalGroupData, 0, sizeof ( GroupData ) );
-    globalGroupData.init = initMeans;
-    globalGroupData.ngroups = 2;
-    globalGroupData.group = group;
-    globalGroupData.size = size;
-    globalGroupData.comp = comp;
-    globalGroupData.seed = seed;
+    globalGroups = &groups;
+    cd.groups    = &groups;
 
     cd.class[0]  = size[0] - 1;
     cd.class[1]  = size[1] - 1;
-    cd.groupdata = &globalGroupData;
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
     installSignalHandler ( 3, signals, signalHandler );
@@ -126,10 +118,10 @@ static void idleTimerCallback
     , void * data
     ) {
 
-    CallbackData  *   cd =  (CallbackData *) data;
-    Options       * opts =       (Options *) cd->options;
-    SignalEmitter *  se  = (SignalEmitter *) cd->signalemitter;
-    GroupData     *   gd =     (GroupData *) cd->groupdata;
+    CallbackData  * cd     = (CallbackData *)  data;
+    Options       * opts   = (Options *)       cd->options;
+    SignalEmitter * se     = (SignalEmitter *) cd->signalemitter;
+    GroupsT       * groups = (GroupsT *)       cd->groups;
 
     if ( timerstatus == Reset ) {
 #ifdef DEBUG_CALLBACK
@@ -139,9 +131,9 @@ static void idleTimerCallback
 
         uint time = alarmEvent->time - itd->lastEventTime;
 
-        cd->class[0] = addValue ( &(gd->group[0]), &time );
+        cd->class[0] = addValue ( &(groups->groups[0]), &time );
 
-        FILE * stream = fopen ( gd->seed[0], "a" );
+        FILE * stream = fopen ( groups->groups[0].seed, "a" );
         fwrite ( &time, sizeof ( uint ), 1, stream );
         fclose ( stream );
 
@@ -151,19 +143,19 @@ static void idleTimerCallback
 
         // double base = strtod ( argv[1], NULL );
         double base = opts->base;
-        double prob = -1.0 * log(gd->size[0]/base) / log(base)
+        double prob = -1.0 * log(groups->groups[0].size/base) / log(base)
                     + log(cd->class[0] + 1.0) / log(base);
 
-        double weight = (cd->class[1] + 1.0) / (double)(gd->size[1]);
+        double weight = (cd->class[1] + 1.0) / (double)(groups->groups[1].size);
 
         int newtime = (double)(cd->newIdletime) * weight * prob;
 
         if ( newtime >= itd->idletime ) {
             cd->newIdletime = newtime;
 
-            cd->class[1] = addValue ( &(gd->group[1]), (uint *) &newtime );
+            cd->class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
 
-            FILE * stream = fopen ( gd->seed[1], "a" );
+            FILE * stream = fopen ( groups->groups[1].seed, "a" );
             fwrite ( &newtime, sizeof ( uint ), 1, stream );
             fclose ( stream );
 
@@ -202,14 +194,14 @@ static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
 
     switch (sig) {
         case SIGUSR1:
-            for ( g = 0; g < globalGroupData.ngroups; g++ ) {
-                printGroup ( &(globalGroupData.group[g]) );
+            for ( g = 0; g < globalGroups->ngroups; g++ ) {
+                printGroup ( &(globalGroups->groups[g]) );
             }
             break;
 
         default:
-            for ( g = 0; g < globalGroupData.ngroups; g++ ) {
-                dumpGroup ( &(globalGroupData->group[g]) );
+            for ( g = 0; g < globalGroups->ngroups; g++ ) {
+                dumpGroup ( &(globalGroups->groups[g]) );
             }
             exit ( EXIT_SUCCESS );
     }
