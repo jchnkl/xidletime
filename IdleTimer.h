@@ -27,8 +27,8 @@ void initIdleTimer ( IdleTimerData * );
 
 void runTimer
     ( IdleTimerData *
-    , void (* cb) (TimerStatusT, IdleTimerData *, XSyncAlarmNotifyEvent *, void *)
     , void *
+    , void (* cb) (TimerStatusT, IdleTimerData *, XSyncAlarmNotifyEvent *, void *)
     );
 
 #endif

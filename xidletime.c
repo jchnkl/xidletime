@@ -87,7 +87,7 @@ int main ( int argc, char ** argv ) {
     cd.class[0] = size[0] - 1;
     cd.class[1] = size[1] - 1;
 
-    runTimer ( &itd, idleTimerCallback, (void *)&cd );
+    runTimer ( &itd, (void *)&cd, idleTimerCallback );
 
     dumpGroup ( &group[0], seed[0] );
     finalizeGroup ( &group[0] );

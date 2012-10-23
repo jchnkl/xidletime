@@ -41,8 +41,8 @@ void initIdleTimer ( IdleTimerData * itd ) {
 
 void runTimer
     ( IdleTimerData * itd
-    , void (* cb) (TimerStatusT, IdleTimerData *, XSyncAlarmNotifyEvent *, void *)
     , void * data
+    , void (* cb) (TimerStatusT, IdleTimerData *, XSyncAlarmNotifyEvent *, void *)
     ) {
 
     XEvent xEvent;
