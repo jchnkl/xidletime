@@ -8,6 +8,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
+#include "Callback.h"
 #include "IdleTimer.h"
 #include "GetOptions.h"
 #include "KMeansCluster.h"
@@ -23,12 +24,7 @@ typedef struct CallbackData
     ;
     } CallbackData;
 
-static void idleTimerCallback
-    ( TimerStatusT
-    , IdleTimerData *
-    , XSyncAlarmNotifyEvent *
-    , void *
-    );
+static void idleTimerCallback ( CallbackT * );
 
 static void signalHandler ( int, siginfo_t *, void * );
 
@@ -94,7 +90,13 @@ int main ( int argc, char ** argv ) {
     cd.signalemitter = &signalemitter;
     // dbus signal emitter init done
 
-    runTimer ( &itd, (void *)&cd, idleTimerCallback );
+    CallbackT callback;
+    IdleTimerCallbackT idletimercallback;
+    idletimercallback.data = &cd;
+    callback.data = &idletimercallback;
+    callback.run  = idleTimerCallback;
+
+    runTimer ( &itd, &callback );
 
     dumpGroup ( &group[0] );
     finalizeGroup ( &group[0] );
@@ -108,19 +110,18 @@ int main ( int argc, char ** argv ) {
 
 }
 
-static void idleTimerCallback
-    ( TimerStatusT timerstatus
-    , IdleTimerData * itd
-    , XSyncAlarmNotifyEvent * alarmEvent
-    , void * data
-    ) {
+static void idleTimerCallback ( CallbackT * callback ) {
 
-    CallbackData  * cd     = (CallbackData *)  data;
-    Options       * opts   = (Options *)       cd->options;
-    SignalEmitter * se     = (SignalEmitter *) cd->signalemitter;
-    GroupsT       * groups = (GroupsT *)       cd->groups;
+    IdleTimerCallbackT    * itc        = (IdleTimerCallbackT *) callback->data;
+    IdleTimerData         * itd        = itc->itd;
+    XSyncAlarmNotifyEvent * alarmEvent = itc->xsane;
+    CallbackData          * cd         = (CallbackData       *) itc->data;
 
-    if ( timerstatus == Reset ) {
+    Options               * opts       = (Options            *) cd->options;
+    SignalEmitter         * se         = (SignalEmitter      *) cd->signalemitter;
+    GroupsT               * groups     = (GroupsT            *) cd->groups;
+
+    if ( itc->status == Reset ) {
 #ifdef DEBUG_CALLBACK
         fprintf ( stderr, "Reset\n" );
 #endif

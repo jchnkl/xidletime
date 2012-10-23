@@ -5,6 +5,8 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
+#include "Callback.h"
+
 typedef enum TimerStatusT { Idle=0, Reset } TimerStatusT;
 
 typedef struct IdleTimerData
@@ -21,14 +23,18 @@ typedef struct IdleTimerData
     ;
     } IdleTimerData;
 
+typedef struct IdleTimerCallbackT
+    { TimerStatusT            status
+    ; IdleTimerData         * itd
+    ; XSyncAlarmNotifyEvent * xsane
+    ; void                  * data
+    ;
+    } IdleTimerCallbackT;
+
 long XSyncValueToLong ( XSyncValue *value );
 
 void initIdleTimer ( IdleTimerData * );
 
-void runTimer
-    ( IdleTimerData *
-    , void *
-    , void (* cb) (TimerStatusT, IdleTimerData *, XSyncAlarmNotifyEvent *, void *)
-    );
+void runTimer ( IdleTimerData *, CallbackT * );
 
 #endif
