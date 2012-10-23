@@ -48,7 +48,7 @@ int seedGroup ( GroupT * group );
 
 int finalizeGroup ( GroupT * group );
 
-void dumpGroup ( GroupT * group, const char * groupFile );
+void dumpGroup ( GroupT * group );
 
 int minDistance ( GroupT * group, unsigned int * value );
 

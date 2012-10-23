@@ -109,10 +109,10 @@ int main ( int argc, char ** argv ) {
 
     runTimer ( &itd, (void *)&cd, idleTimerCallback );
 
-    dumpGroup ( &group[0], seed[0] );
+    dumpGroup ( &group[0] );
     finalizeGroup ( &group[0] );
 
-    dumpGroup ( &group[1], seed[1] );
+    dumpGroup ( &group[1] );
     finalizeGroup ( &group[1] );
 
     finalizeDBus ( &dbusconfig );
@@ -211,9 +211,7 @@ static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
 
         default:
             for ( g = 0; g < globalGroupData.ngroups; g++ ) {
-                dumpGroup ( &(globalGroupData.group[g])
-                          ,   globalGroupData.seed[g]
-                          );
+                dumpGroup ( &(globalGroupData->group[g]) );
             }
             exit ( EXIT_SUCCESS );
     }

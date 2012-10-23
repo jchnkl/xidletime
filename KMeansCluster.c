@@ -132,7 +132,7 @@ int finalizeGroup ( GroupT * group ) {
     return 0;
 }
 
-void dumpGroup ( GroupT * group, const char * groupFile ) {
+void dumpGroup ( GroupT * group ) {
     int i;
     FILE * stream = fopen ( group->seed, "w+" );
 
