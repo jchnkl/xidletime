@@ -192,13 +192,6 @@ int addValue ( group_t * group, unsigned int * value ) {
     int idx = minDistance ( group, value );
     addKMeanValue ( group, &idx, value );
     updateGroup ( group );
-    /*
-    if ( group->seed != NULL ) {
-        FILE * stream = fopen ( group->seed, "a" );
-        fwrite ( value, sizeof ( unsigned int ), 1, stream );
-        fclose ( stream );
-    }
-    */
     return idx;
 }
 
@@ -209,7 +202,7 @@ void distributeMeans ( group_t * group ) {
         if ( group->cluster[i].bucket == NULL ) continue;
 
         // copy of pointer
-        bucket_t * prev   = NULL; // group->cluster[i].bucket;
+        bucket_t * prev   = NULL;
         bucket_t * bucket = group->cluster[i].bucket;
 
         while ( bucket != NULL && bucket->value != 0 ) {
@@ -288,7 +281,7 @@ void printGroup ( group_t * group ) {
 
     fprintf ( stderr, "group with size %u, sorted by %i\n", group->size, group->cmp_type );
     for ( i = 0; i < group->size; i++ ) {
-        // fprintf ( stderr, "address: %u\t", &group->cluster[i] );
+
         fprintf ( stderr, "cluster: %u\t", i );
         fprintf ( stderr, "mean: %u\t", group->cluster[i].mean );
         fprintf ( stderr, "fillcount: %u\n", group->cluster[i].fillcount );
@@ -321,20 +314,5 @@ void printGroup ( group_t * group ) {
         }
         fprintf ( stdout, "\n\n" );
 
-        /*
-        int sum = 0, count = 0;
-        while ( bucket != NULL ) {
-            fprintf ( stderr, "%u ", bucket->value );
-            count++; sum+= bucket->value;
-            bucket = bucket->next;
-        }
-        */
-
-        /*
-        for ( int j = 0; j < group->cluster[i].fillcount % BUCKETSIZE; j++ ) {
-            fprintf ( stderr, "%u ", group->cluster[i].values[j] );
-        }
-        */
-        // fprintf ( stderr, "\ncalculated mean is: %f\n\n", sum / (double)count );
     }
 }
