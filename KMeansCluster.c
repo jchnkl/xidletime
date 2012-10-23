@@ -116,27 +116,15 @@ int seedGroup ( group_t * group ) {
 
 int finalizeGroup ( group_t * group ) {
     int i;
-    FILE * stream = NULL;
-
-    if ( group->seed != NULL ) {
-        // stream = fopen ( group->seed, "w+" );
-    }
 
     for ( i = 0; i < group->size; i++ ) {
         bucket_t * bucket = group->cluster[i].bucket;
         while ( bucket != NULL ) {
-            if ( stream != NULL ) {
-                // fwrite ( &(bucket->value), sizeof ( unsigned int ), 1, stream );
-            }
             bucket_t * tmp = bucket->next;
             tmp = bucket->next;
             free ( bucket );
             bucket = tmp;
         }
-    }
-
-    if ( stream != NULL ) {
-        // fclose ( stream );
     }
 
     free ( group->cluster );
