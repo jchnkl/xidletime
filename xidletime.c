@@ -124,12 +124,13 @@ static void idleTimerCallback
     , void * data
     ) {
 
+    CallbackData  *   cd =  (CallbackData *) data;
+    Options       * opts =       (Options *) cd->options;
+    SignalEmitter *  se  = (SignalEmitter *) cd->signalemitter;
+    GroupData     *   gd =     (GroupData *) cd->groupdata;
+
     if ( timerstatus == Reset ) {
         fprintf ( stderr, "Reset\n" );
-
-        CallbackData *   cd = (CallbackData *) data;
-        Options      * opts =      (Options *) cd->options;
-        GroupData    *   gd =    (GroupData *) cd->groupdata;
 
         uint time = alarmEvent->time - itd->lastEventTime;
 
