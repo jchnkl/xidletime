@@ -23,20 +23,32 @@ cmp_fun_t cmp_fun[] =
     , compFill
     };
 
-int makeGroup ( group_t * group, unsigned int size ) {
+int makeGroup
+    ( int (* init) (int, int)
+    , group_t         * group
+    , unsigned   int    size
+    , cmp_type_t        comp
+    , const      char * seed
+    ) {
+
+    int k;
 
     if ( group == NULL ) group = (group_t *) calloc ( size, sizeof ( group_t ) );
 
     group->size = size;
+    group->cmp_type = comp;
 
     cluster_t * cluster = (cluster_t *) calloc ( size, sizeof ( cluster_t ) );
     group->cluster = &cluster[0];
 
-    if ( group->cluster != NULL ) {
-        return 0;
-    } else {
-        return -1;
+    for ( k = 0; k < size; k++ ) { group->cluster[k].mean = init ( k, size ); }
+
+    if ( seed != NULL ) {
+        group->path = seed;
+        seedGroup ( group, seed );
     }
+
+    return 0;
 }
 
 int makeGroups
@@ -48,9 +60,9 @@ int makeGroups
     , const      char ** seed
     ) {
 
-    int i, k;
+    int i;
 
-    if ( size == NULL || comp == NULL || seed == NULL ) return -1;
+    if ( size == NULL || comp == NULL ) return -1;
 
     if ( groups == NULL ) {
         groups = (group_t **) calloc ( ngroups , sizeof ( group_t * ) );
@@ -59,14 +71,7 @@ int makeGroups
     }
 
     for ( i = 0; i < ngroups; i++ ) {
-        groups[i]->cmp_type = comp[i];
-        makeGroup ( groups[i], size[i] );
-
-        for ( k = 0; k < size[i]; k++ ) {
-            groups[i]->cluster[k].mean = init ( k, size[i] );
-        }
-
-        seedGroup ( groups[i], seed[i] );
+        makeGroup ( init, groups[i], size[i], comp[i], seed[i] );
     }
 
 }
