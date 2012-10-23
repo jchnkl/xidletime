@@ -71,9 +71,9 @@ int dbusEmitSignal ( DBusConfig * dbusconfig ) {
 
 }
 
-static int _dbusEmitSignal ( SignalEmitter * se, char * name, void * args ) {
-    ((DBusConfig *)(se->config))->signalName = name;
-    dbusEmitSignal ( se->config );
+static int _dbusEmitSignal ( SignalEmitter * se, char * name ) {
+    ((DBusConfig *)(se->data))->signalName = name;
+    dbusEmitSignal ( se->data );
     return 0;
 }
 
@@ -82,7 +82,7 @@ int getSignalEmitter ( DBusConfig * dbusconfig, SignalEmitter * signalemitter ) 
     int ret = 0;
     if ( dbusconfig == NULL ) { ret = -1; goto exit; }
 
-    signalemitter->config = dbusconfig;
+    signalemitter->data = dbusconfig;
     signalemitter->emitSignal = _dbusEmitSignal;
 
 exit:
