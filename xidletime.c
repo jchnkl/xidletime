@@ -131,6 +131,7 @@ static void idleTimerCallback
 
     if ( timerstatus == Reset ) {
         fprintf ( stderr, "Reset\n" );
+        se->emitSignal ( se, "Reset" );
 
         uint time = alarmEvent->time - itd->lastEventTime;
 
@@ -181,6 +182,7 @@ static void idleTimerCallback
 
     } else {
         fprintf ( stderr, "Idle\n" );
+        se->emitSignal ( se, "Idle" );
     }
 
 }
