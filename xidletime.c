@@ -28,7 +28,7 @@ typedef struct CallbackData
     } CallbackData;
 
 static void idleTimerCallback
-    ( IdleT
+    ( TimerStatusT
     , IdleTimerData *
     , XSyncAlarmNotifyEvent *
     , void *
@@ -100,13 +100,13 @@ int main ( int argc, char ** argv ) {
 }
 
 static void idleTimerCallback
-    ( IdleT idlet
+    ( TimerStatusT timerstatus
     , IdleTimerData * itd
     , XSyncAlarmNotifyEvent * alarmEvent
     , void * data
     ) {
 
-    if ( idlet == Reset ) {
+    if ( timerstatus == Reset ) {
         fprintf ( stderr, "Reset\n" );
 
         CallbackData *   cd = (CallbackData *) data;

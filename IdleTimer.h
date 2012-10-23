@@ -5,7 +5,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
 
-typedef enum IdleT { Idle=0, Reset } IdleT;
+typedef enum TimerStatusT { Idle=0, Reset } TimerStatusT;
 
 typedef struct IdleTimerData
     { Display * dpy                     // ptr to display
@@ -27,7 +27,7 @@ void initIdleTimer ( IdleTimerData * );
 
 void runTimer
     ( IdleTimerData *
-    , void (* cb) (IdleT, IdleTimerData *, XSyncAlarmNotifyEvent *, void *)
+    , void (* cb) (TimerStatusT, IdleTimerData *, XSyncAlarmNotifyEvent *, void *)
     , void *
     );
 
