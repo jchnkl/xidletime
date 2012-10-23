@@ -80,11 +80,10 @@ static int _dbusEmitSignal ( SignalEmitter * se, char * name ) {
 int getSignalEmitter ( DBusConfig * dbusconfig, SignalEmitter * signalemitter ) {
 
     int ret = 0;
-    if ( dbusconfig == NULL ) { ret = -1; goto exit; }
+    if ( dbusconfig == NULL ) return -1;
 
     signalemitter->data = dbusconfig;
     signalemitter->emitSignal = _dbusEmitSignal;
 
-exit:
-    return ret;
+    return 0;
 }
