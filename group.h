@@ -1,7 +1,7 @@
 #ifndef __GROUP_H
 #define __GROUP_H
 
-#include "kmeans.h"
+#include "KMeansCluster.h"
 
 typedef struct GroupData
     { int (* init) (int, int)

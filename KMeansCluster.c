@@ -1,4 +1,4 @@
-#include "kmeans.h"
+#include "KMeansCluster.h"
 
 #include <stdio.h>
 #include <stdlib.h>

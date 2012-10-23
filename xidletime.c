@@ -11,7 +11,7 @@
 #include "IdleTimer.h"
 #include "group.h"
 #include "GetOptions.h"
-#include "kmeans.h"
+#include "KMeansCluster.h"
 #include "SignalHandler.h"
 #include "DBusSignalEmitter.h"
 

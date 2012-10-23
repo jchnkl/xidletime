@@ -1,5 +1,5 @@
-#ifndef __KMEANS_H
-#define __KMEANS_H
+#ifndef __KMEANSCLUSTER_H
+#define __KMEANSCLUSTER_H
 
 typedef enum cmp_type_t { MEAN=0, FILL } cmp_type_t;
 
