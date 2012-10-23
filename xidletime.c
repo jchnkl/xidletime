@@ -52,7 +52,7 @@ int main ( int argc, char ** argv ) {
     seed[1] = options.timeoutfile;
 
     GroupT group[2];
-    int size[] = { 100, 10 };
+    unsigned int size[] = { 100, 10 };
     CmpTypeT comp[] = { MEAN, FILL };
     int initMeans ( int m, int s ) {
         return (int)((double)(options.idletime * 1000) * (double)m / (double)s);
