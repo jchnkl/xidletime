@@ -15,8 +15,6 @@
 #include "SignalHandler.h"
 #include "DBusSignalEmitter.h"
 
-typedef unsigned  int uint;
-typedef unsigned long ulong;
 
 GroupData globalGroupData;
 
