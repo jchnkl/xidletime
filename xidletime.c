@@ -51,9 +51,9 @@ int main ( int argc, char ** argv ) {
     seed[0] = options.idlefile;
     seed[1] = options.timeoutfile;
 
-    group_t group[2];
+    GroupT group[2];
     int size[] = { 100, 10 };
-    cmp_type_t comp[] = { MEAN, FILL };
+    CmpTypeT comp[] = { MEAN, FILL };
     int initMeans ( int m, int s ) {
         return (int)((double)(options.idletime * 1000) * (double)m / (double)s);
     }

@@ -6,9 +6,9 @@
 typedef struct GroupData
     { int (* init) (int, int)
     ; int ngroups
-    ; group_t * group
+    ; GroupT * group
     ; int * size
-    ; cmp_type_t * comp
+    ; CmpTypeT * comp
     ; const char ** seed
     ;
     } GroupData;

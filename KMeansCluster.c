@@ -6,39 +6,39 @@
 #include <math.h>
 #include <sys/ioctl.h>
 
-typedef int (* cmp_fun_t) ( const void * a, const void * b);
+typedef int (* CmpFunT) ( const void * a, const void * b);
 
 static
 int compMean ( const void *clusterl, const void *clusterr ) {
-    return ((cluster_t *)clusterl)->mean > ((cluster_t *)clusterr)->mean;
+    return ((ClusterT *)clusterl)->mean > ((ClusterT *)clusterr)->mean;
 }
 
 static
 int compFill ( const void *clusterl, const void *clusterr ) {
-    return ((cluster_t *)clusterl)->fillcount > ((cluster_t *)clusterr)->fillcount;
+    return ((ClusterT *)clusterl)->fillcount > ((ClusterT *)clusterr)->fillcount;
 }
 
-cmp_fun_t cmp_fun[] =
+CmpFunT cmp_fun[] =
     { compMean
     , compFill
     };
 
 int makeGroup
     ( int (* init) (int, int)
-    , group_t         * group
+    , GroupT         * group
     , unsigned   int    size
-    , cmp_type_t        comp
+    , CmpTypeT          comp
     , const      char * seed
     ) {
 
     int k;
 
-    if ( group == NULL ) group = (group_t *) calloc ( size, sizeof ( group_t ) );
+    if ( group == NULL ) group = (GroupT *) calloc ( size, sizeof ( GroupT ) );
 
     group->size = size;
     group->cmp_type = comp;
 
-    cluster_t * cluster = (cluster_t *) calloc ( size, sizeof ( cluster_t ) );
+    ClusterT * cluster = (ClusterT *) calloc ( size, sizeof ( ClusterT ) );
     group->cluster = &cluster[0];
 
     for ( k = 0; k < size; k++ ) { group->cluster[k].mean = init ( k, size ); }
@@ -53,10 +53,10 @@ int makeGroup
 
 int makeGroups
     ( int (* init) (int, int)
-    , group_t         ** groups
+    , GroupT         ** groups
     , unsigned   int     ngroups
     , unsigned   int  *  size
-    , cmp_type_t      *  comp
+    , CmpTypeT        *  comp
     , const      char ** seed
     ) {
 
@@ -65,9 +65,9 @@ int makeGroups
     if ( size == NULL || comp == NULL ) return -1;
 
     if ( groups == NULL ) {
-        groups = (group_t **) calloc ( ngroups , sizeof ( group_t * ) );
+        groups = (GroupT **) calloc ( ngroups , sizeof ( GroupT * ) );
     } else {
-        memset ( groups, 0, ngroups * sizeof ( group_t * ) );
+        memset ( groups, 0, ngroups * sizeof ( GroupT * ) );
     }
 
     for ( i = 0; i < ngroups; i++ ) {
@@ -77,7 +77,7 @@ int makeGroups
     return 0;
 }
 
-int seedGroup ( group_t * group ) {
+int seedGroup ( GroupT * group ) {
 
     unsigned int   i;
     long           length;
@@ -115,13 +115,13 @@ int seedGroup ( group_t * group ) {
     return 0;
 }
 
-int finalizeGroup ( group_t * group ) {
+int finalizeGroup ( GroupT * group ) {
     int i;
 
     for ( i = 0; i < group->size; i++ ) {
-        bucket_t * bucket = group->cluster[i].bucket;
+        BucketT * bucket = group->cluster[i].bucket;
         while ( bucket != NULL ) {
-            bucket_t * tmp = bucket->next;
+            BucketT * tmp = bucket->next;
             tmp = bucket->next;
             free ( bucket );
             bucket = tmp;
@@ -133,12 +133,12 @@ int finalizeGroup ( group_t * group ) {
     return 0;
 }
 
-void dumpGroup ( group_t * group, const char * groupFile ) {
+void dumpGroup ( GroupT * group, const char * groupFile ) {
     int i;
     FILE * stream = fopen ( group->seed, "w+" );
 
     for ( i = 0; i < group->size; i++ ) {
-        bucket_t * bucket = group->cluster[i].bucket;
+        BucketT * bucket = group->cluster[i].bucket;
         while ( bucket != NULL ) {
             fwrite ( &(bucket->value), sizeof ( unsigned int ), 1, stream );
             bucket = bucket->next;
@@ -148,7 +148,7 @@ void dumpGroup ( group_t * group, const char * groupFile ) {
     fclose ( stream );
 }
 
-int minDistance ( group_t * group, unsigned int * value ) {
+int minDistance ( GroupT * group, unsigned int * value ) {
     int i, idx = 0, gdist = 0x7fffffff;
     for ( i = 0; i < group->size; i++ ) {
         int ldist = abs ( * value - group->cluster[i].mean );
@@ -157,18 +157,18 @@ int minDistance ( group_t * group, unsigned int * value ) {
     return idx;
 }
 
-void addKMeanValue ( group_t * group, int * idx, unsigned int * value ) {
-    bucket_t * tmp = (bucket_t *) calloc ( 1, sizeof ( bucket_t ) );
+void addKMeanValue ( GroupT * group, int * idx, unsigned int * value ) {
+    BucketT * tmp = (BucketT *) calloc ( 1, sizeof ( BucketT ) );
     tmp->value = *value;
     tmp->next = group->cluster[*idx].bucket;
     group->cluster[*idx].bucket = tmp;
     group->cluster[*idx].fillcount++;
 }
 
-int findValue ( group_t * group, unsigned int * value ) {
+int findValue ( GroupT * group, unsigned int * value ) {
     int i;
     for ( i = 0; i < group->size; i++ ) {
-        bucket_t * bucket = group->cluster[i].bucket;
+        BucketT * bucket = group->cluster[i].bucket;
         while ( bucket != NULL ) {
             if ( bucket->value == *value ) return i;
             bucket = bucket->next;
@@ -177,27 +177,27 @@ int findValue ( group_t * group, unsigned int * value ) {
     return -1;
 }
 
-int addValue ( group_t * group, unsigned int * value ) {
+int addValue ( GroupT * group, unsigned int * value ) {
     int idx = minDistance ( group, value );
     addKMeanValue ( group, &idx, value );
     updateGroup ( group );
     return idx;
 }
 
-void distributeMeans ( group_t * group ) {
+void distributeMeans ( GroupT * group ) {
     int i = 0;
     for ( i = 0; i < group->size; i++ ) {
 
         if ( group->cluster[i].bucket == NULL ) continue;
 
         // copy of pointer
-        bucket_t * prev   = NULL;
-        bucket_t * bucket = group->cluster[i].bucket;
+        BucketT * prev   = NULL;
+        BucketT * bucket = group->cluster[i].bucket;
 
         while ( bucket != NULL && bucket->value != 0 ) {
             int idx = minDistance ( group, &bucket->value );
 
-            bucket_t * next = bucket->next;
+            BucketT * next = bucket->next;
 
             if ( idx != i ) {
 
@@ -231,10 +231,10 @@ void distributeMeans ( group_t * group ) {
     }
 }
 
-void updateMeans ( group_t * group ) {
+void updateMeans ( GroupT * group ) {
     int i;
     unsigned int newmean = 0;
-    bucket_t * bucket;
+    BucketT * bucket;
     for ( i = 0; i < group->size; i++ ) {
         if ( group->cluster[i].fillcount == 0 ) continue;
         bucket = group->cluster[i].bucket;
@@ -247,7 +247,7 @@ void updateMeans ( group_t * group ) {
     }
 }
 
-void updateGroup ( group_t * group ) {
+void updateGroup ( GroupT * group ) {
     do {
         group->changed = 0;
         updateMeans ( group );
@@ -256,14 +256,14 @@ void updateGroup ( group_t * group ) {
 
     qsort ( group->cluster
           , group->size
-          , sizeof ( cluster_t )
+          , sizeof ( ClusterT )
           , cmp_fun[group->cmp_type]
           );
 }
 
-void printGroup ( group_t * group ) {
+void printGroup ( GroupT * group ) {
     int i;
-    bucket_t * bucket;
+    BucketT * bucket;
 
     struct winsize ws;
     ioctl ( 0, TIOCGWINSZ, &ws );
