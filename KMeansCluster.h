@@ -39,7 +39,7 @@ int makeGroups
     , const      char ** seed
     );
 
-int seedGroup ( group_t * group, const char * seed );
+int seedGroup ( group_t * group );
 
 int finalizeGroup ( group_t * group );
 

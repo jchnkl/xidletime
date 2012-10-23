@@ -45,7 +45,7 @@ int makeGroup
 
     if ( seed != NULL ) {
         group->seed = seed;
-        seedGroup ( group, seed );
+        seedGroup ( group );
     }
 
     return 0;
@@ -76,7 +76,7 @@ int makeGroups
 
 }
 
-int seedGroup ( group_t * group, const char * seed ) {
+int seedGroup ( group_t * group ) {
 
     unsigned int   i;
     long           length;
@@ -84,12 +84,13 @@ int seedGroup ( group_t * group, const char * seed ) {
     FILE         * stream;
     unsigned int * values;
 
-    if ( seed != NULL ) {
-        group->seed = seed;
+    if ( group->seed != NULL ) {
 #ifdef DEBUG
         fprintf ( stderr, "open: %s\n", seed );
 #endif
-        stream = fopen ( seed, "a+" );
+        stream = fopen ( group->seed, "a+" );
+    } else {
+        return -1;
     }
 
     if ( stream != NULL ) {
