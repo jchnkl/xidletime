@@ -13,6 +13,7 @@
 #include "GetOptions.h"
 #include "kmeans.h"
 #include "SignalHandler.h"
+#include "DBusSignalEmitter.h"
 
 typedef unsigned  int uint;
 typedef unsigned long ulong;
@@ -21,6 +22,7 @@ GroupData globalGroupData;
 
 typedef struct CallbackData
     { Options       * options
+    ; SignalEmitter * signalemitter
     ; GroupData     * groupdata
     ; int             newIdletime
     ; int             class[2]
@@ -88,6 +90,18 @@ int main ( int argc, char ** argv ) {
 
     initIdleTimer ( &itd );
 
+    // initialize dbus signal emitter
+    DBusConfig dbusconfig;
+    dbusconfig.busName       = options.busName;
+    dbusconfig.objectPath    = options.objectPath;
+    dbusconfig.interfaceName = options.interfaceName;
+
+    initDBus ( &dbusconfig );
+    SignalEmitter signalemitter;
+    getSignalEmitter ( &dbusconfig, &signalemitter );
+
+    cd.signalemitter = &signalemitter;
+    // dbus signal emitter init done
 
     runTimer ( &itd, (void *)&cd, idleTimerCallback );
 
@@ -96,6 +110,8 @@ int main ( int argc, char ** argv ) {
 
     dumpGroup ( &group[1], seed[1] );
     finalizeGroup ( &group[1] );
+
+    finalizeDBus ( &dbusconfig );
 
     return 0;
 
