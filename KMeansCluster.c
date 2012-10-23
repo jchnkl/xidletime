@@ -74,6 +74,7 @@ int makeGroups
         makeGroup ( init, groups[i], size[i], comp[i], seed[i] );
     }
 
+    return 0;
 }
 
 int seedGroup ( group_t * group ) {
