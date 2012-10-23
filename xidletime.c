@@ -14,9 +14,6 @@
 #include "SignalHandler.h"
 #include "DBusSignalEmitter.h"
 
-// for signal handler
-GroupsT * globalGroups;
-
 typedef struct CallbackData
     { Options       *  options
     ; SignalEmitter *  signalemitter
@@ -59,13 +56,13 @@ int main ( int argc, char ** argv ) {
     groups.ngroups = 2;
     groups.groups  = &group[0];
     makeGroups ( initMeans, &groups, size, comp, seed );
-    globalGroups = &groups;
     cd.groups    = &groups;
 
     cd.class[0]  = size[0] - 1;
     cd.class[1]  = size[1] - 1;
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
+    initializeSignalData ( &groups );
     installSignalHandler ( 3, signals, signalHandler );
 
     ulong flags = XSyncCACounter
@@ -187,6 +184,7 @@ static void idleTimerCallback
 
 static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
     int g;
+    GroupsT * groups = (GroupsT *) getSignalData();
 
 #ifdef DEBUG_SIGNALHANDLER
     fprintf ( stderr, "Caught signal %d\n", sig );
@@ -194,14 +192,14 @@ static void signalHandler ( int sig, siginfo_t * siginfo, void * context ) {
 
     switch (sig) {
         case SIGUSR1:
-            for ( g = 0; g < globalGroups->ngroups; g++ ) {
-                printGroup ( &(globalGroups->groups[g]) );
+            for ( g = 0; g < groups->ngroups; g++ ) {
+                printGroup ( &(groups->groups[g]) );
             }
             break;
 
         default:
-            for ( g = 0; g < globalGroups->ngroups; g++ ) {
-                dumpGroup ( &(globalGroups->groups[g]) );
+            for ( g = 0; g < groups->ngroups; g++ ) {
+                dumpGroup ( &(groups->groups[g]) );
             }
             exit ( EXIT_SUCCESS );
     }

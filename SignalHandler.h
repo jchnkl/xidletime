@@ -3,6 +3,12 @@
 
 #include <signal.h>
 
+static void * signalData;
+
+void initializeSignalData ( void * sd ) { signalData = sd; }
+
+void * getSignalData ( void ) { return signalData; }
+
 void installSignalHandler
     ( int nsignals
     , int * signals
