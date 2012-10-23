@@ -53,8 +53,7 @@ int makeGroup
 
 int makeGroups
     ( int (* init) (int, int)
-    , GroupT         ** groups
-    , unsigned   int     ngroups
+    , GroupsT         *  groups
     , unsigned   int  *  size
     , CmpTypeT        *  comp
     , const      char ** seed
@@ -64,14 +63,14 @@ int makeGroups
 
     if ( size == NULL || comp == NULL ) return -1;
 
-    if ( groups == NULL ) {
-        groups = (GroupT **) calloc ( ngroups , sizeof ( GroupT * ) );
+    if ( groups->groups == NULL ) {
+        groups->groups = (GroupT *) calloc ( groups->ngroups, sizeof (GroupT *) );
     } else {
-        memset ( groups, 0, ngroups * sizeof ( GroupT * ) );
+        memset ( groups->groups, 0, groups->ngroups * sizeof ( GroupT * ) );
     }
 
-    for ( i = 0; i < ngroups; i++ ) {
-        makeGroup ( init, groups[i], size[i], comp[i], seed[i] );
+    for ( i = 0; i < groups->ngroups; i++ ) {
+        makeGroup ( init, &(groups->groups[i]), size[i], comp[i], seed[i] );
     }
 
     return 0;

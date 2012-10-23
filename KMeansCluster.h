@@ -22,6 +22,12 @@ typedef struct GroupT {
     ClusterT * cluster;
 } GroupT;
 
+typedef struct GroupsT
+    { unsigned int   ngroups
+    ; GroupT       * groups
+    ;
+    } GroupsT;
+
 int makeGroup
     ( int (* init) (int, int)
     , GroupT         * group
@@ -32,8 +38,7 @@ int makeGroup
 
 int makeGroups
     ( int (* init) (int, int)
-    , GroupT         ** groups
-    , unsigned   int     ngroups
+    , GroupsT         *  groups
     , unsigned   int  *  size
     , CmpTypeT        *  comp
     , const      char ** seed
