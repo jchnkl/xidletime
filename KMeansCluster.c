@@ -39,6 +39,38 @@ int makeGroup ( group_t * group, unsigned int size ) {
     }
 }
 
+int makeGroups
+    ( int (* init) (int, int)
+    , group_t         ** groups
+    , unsigned   int     ngroups
+    , unsigned   int  *  size
+    , cmp_type_t      *  comp
+    , const      char ** seed
+    ) {
+
+    int i, k;
+
+    if ( size == NULL || comp == NULL || seed == NULL ) return -1;
+
+    if ( groups == NULL ) {
+        groups = (group_t **) calloc ( ngroups , sizeof ( group_t * ) );
+    } else {
+        memset ( groups, 0, ngroups * sizeof ( group_t * ) );
+    }
+
+    for ( i = 0; i < ngroups; i++ ) {
+        groups[i]->cmp_type = comp[i];
+        makeGroup ( groups[i], size[i] );
+
+        for ( k = 0; k < size[i]; k++ ) {
+            groups[i]->cluster[k].mean = init ( k, size[i] );
+        }
+
+        seedGroup ( groups[i], seed[i] );
+    }
+
+}
+
 int seedGroup ( group_t * group, const char * path ) {
 
     unsigned int   i;

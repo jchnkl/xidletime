@@ -24,6 +24,15 @@ typedef struct group_t {
 
 int makeGroup ( group_t * group, unsigned int size );
 
+int makeGroups
+    ( int (* init) (int, int)
+    , group_t         ** groups
+    , unsigned   int     ngroups
+    , unsigned   int  *  size
+    , cmp_type_t      *  comp
+    , const      char ** seed
+    );
+
 int seedGroup ( group_t * group, const char * path );
 
 int finalizeGroup ( group_t * group );
