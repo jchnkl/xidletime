@@ -130,7 +130,9 @@ static void idleTimerCallback
     GroupData     *   gd =     (GroupData *) cd->groupdata;
 
     if ( timerstatus == Reset ) {
+#ifdef DEBUG_CALLBACK
         fprintf ( stderr, "Reset\n" );
+#endif
         se->emitSignal ( se, "Reset" );
 
         uint time = alarmEvent->time - itd->lastEventTime;
@@ -181,7 +183,9 @@ static void idleTimerCallback
 #endif
 
     } else {
+#ifdef DEBUG_CALLBACK
         fprintf ( stderr, "Idle\n" );
+#endif
         se->emitSignal ( se, "Idle" );
     }
 
