@@ -21,7 +21,6 @@ typedef struct TimerCallbackT
     ; GroupsT       *  groups
     ; int              newIdletime
     ; int              class[2]
-    ; CallbackDataT * data;
     ;
     } TimerCallbackT;
 
