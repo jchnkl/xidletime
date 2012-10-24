@@ -8,7 +8,7 @@ long XSyncValueToLong ( XSyncValue *value ) {
            );
 }
 
-void initIdleTimer ( IdleTimerData * itd ) {
+void initIdleTimer ( XTimerT * itd ) {
     int i, listCount = 0;
     XSyncSystemCounter * sysCounter = NULL, * counter = NULL;
     XSyncValue value[2];
@@ -39,7 +39,7 @@ void initIdleTimer ( IdleTimerData * itd ) {
     itd->alarm = XSyncCreateAlarm ( itd->dpy, itd->flags, itd->attributes );
 }
 
-void runTimer ( IdleTimerData * itd, CallbackT * callback ) {
+void runTimer ( XTimerT * itd, CallbackT * callback ) {
 
     XEvent xEvent;
     XSyncAlarmNotifyEvent * alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;

@@ -9,23 +9,23 @@
 
 typedef enum TimerStatusT { Idle=0, Reset } TimerStatusT;
 
-typedef struct IdleTimerData
-    { Display * dpy                     // ptr to display
-    ; int major                         // major version
-    ; int minor                         // minor version
-    ; int ev_base                       // offset for event ptr
-    ; int err_base                      // offset for error
-    ; int idletime                      // timeout for idle alarm
-    ; ulong flags                       // flags for attributes
-    ; Time lastEventTime                // time of last event
-    ; XSyncAlarm alarm                  // alarm id
-    ; XSyncAlarmAttributes * attributes // attributes
+typedef struct XTimerT
+    { Display              * dpy           // ptr to display
+    ; int                    major         // major version
+    ; int                    minor         // minor version
+    ; int                    ev_base       // offset for event ptr
+    ; int                    err_base      // offset for error
+    ; int                    idletime      // timeout for idle alarm
+    ; ulong                  flags         // flags for attributes
+    ; Time                   lastEventTime // time of last event
+    ; XSyncAlarm             alarm         // alarm id
+    ; XSyncAlarmAttributes * attributes    // attributes
     ;
-    } IdleTimerData;
+    } XTimerT;
 
 typedef struct IdleTimerCallbackT
     { TimerStatusT            status
-    ; IdleTimerData         * itd
+    ; XTimerT         * itd
     ; XSyncAlarmNotifyEvent * xsane
     ; void                  * data
     ;
@@ -33,8 +33,8 @@ typedef struct IdleTimerCallbackT
 
 long XSyncValueToLong ( XSyncValue *value );
 
-void initIdleTimer ( IdleTimerData * );
+void initIdleTimer ( XTimerT * );
 
-void runTimer ( IdleTimerData *, CallbackT * );
+void runTimer ( XTimerT *, CallbackT * );
 
 #endif

@@ -70,7 +70,7 @@ int main ( int argc, char ** argv ) {
 
     XSyncAlarmAttributes attributes;
 
-    IdleTimerData itd; memset ( &itd, 0, sizeof ( IdleTimerData ) );
+    XTimerT itd; memset ( &itd, 0, sizeof ( XTimerT ) );
     itd.flags = flags;
     itd.attributes = &attributes;
     itd.idletime = options.idletime * 1000;
@@ -113,7 +113,7 @@ int main ( int argc, char ** argv ) {
 static void idleTimerCallback ( CallbackDataT * data ) {
 
     IdleTimerCallbackT    * itc        = (IdleTimerCallbackT *) data;
-    IdleTimerData         * itd        = itc->itd;
+    XTimerT         * itd        = itc->itd;
     XSyncAlarmNotifyEvent * alarmEvent = itc->xsane;
     CallbackData          * cd         = (CallbackData       *) itc->data;
 
