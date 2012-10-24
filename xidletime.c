@@ -23,7 +23,6 @@ typedef struct TimerCallbackT
     ;
     } TimerCallbackT;
 
-// static void timerCallback ( CallbackT * callback );
 static void timerCB ( CallbackDataT * );
 
 static void signalHandler ( int, siginfo_t *, void * );
@@ -143,7 +142,6 @@ static void timerCB ( CallbackDataT * data ) {
         // base=0.2
         // plot [0:99] (-1.0 * log(100/base) / log(base)) + log(x) / log(base)
 
-        // double base = strtod ( argv[1], NULL );
         prob = -1.0 * log(groups->groups[0].size/base) / log(base)
              + log(timercb->class[0] + 1.0) / log(base);
 
@@ -159,9 +157,6 @@ static void timerCB ( CallbackDataT * data ) {
             fclose ( stream );
 
             setXIdleTime ( xtimer, newtime );
-            // XSyncValue value;
-            // XSyncIntToValue ( &value, newtime );
-            // xtimer->attributes->trigger.wait_value = value;
         }
 
 #ifdef DEBUG_CALLBACK
