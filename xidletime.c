@@ -60,6 +60,19 @@ int main ( int argc, char ** argv ) {
     initializeSignalData ( &groups );
     installSignalHandler ( 3, signals, signalHandler );
 
+    // initialize dbus signal emitter
+    DBusConfig dbusconfig;
+    dbusconfig.busName       = options.busName;
+    dbusconfig.objectPath    = options.objectPath;
+    dbusconfig.interfaceName = options.interfaceName;
+
+    initDBus ( &dbusconfig );
+    SignalEmitter signalemitter;
+    getSignalEmitter ( &dbusconfig, &signalemitter );
+
+    timercb.signalemitter = &signalemitter;
+    // dbus signal emitter init done
+
     ulong flags = XSyncCACounter
                 | XSyncCAValueType
                 | XSyncCATestType
@@ -76,18 +89,6 @@ int main ( int argc, char ** argv ) {
 
     initXTimer ( &xtimer );
 
-    // initialize dbus signal emitter
-    DBusConfig dbusconfig;
-    dbusconfig.busName       = options.busName;
-    dbusconfig.objectPath    = options.objectPath;
-    dbusconfig.interfaceName = options.interfaceName;
-
-    initDBus ( &dbusconfig );
-    SignalEmitter signalemitter;
-    getSignalEmitter ( &dbusconfig, &signalemitter );
-
-    timercb.signalemitter = &signalemitter;
-    // dbus signal emitter init done
 
     CallbackT callback;
     IdleTimerCallbackT idletimercallback;
