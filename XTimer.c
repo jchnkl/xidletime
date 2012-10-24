@@ -2,12 +2,6 @@
 
 #include <string.h>
 
-long XSyncValueToLong ( XSyncValue *value ) {
-    return ( (long) XSyncValueHigh32 ( *value ) << 32
-            | XSyncValueLow32 ( *value )
-           );
-}
-
 void initXTimer ( XTimerT * xtimer ) {
     int i, listCount = 0;
     XSyncSystemCounter * sysCounter = NULL, * counter = NULL;

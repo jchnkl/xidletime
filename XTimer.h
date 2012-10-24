@@ -31,8 +31,6 @@ typedef struct IdleTimerCallbackT
     ;
     } IdleTimerCallbackT;
 
-long XSyncValueToLong ( XSyncValue *value );
-
 void initXTimer ( XTimerT * );
 
 void runXTimer ( XTimerT *, CallbackT * );
