@@ -16,14 +16,14 @@
 #include "DBusSignalEmitter.h"
 
 typedef struct TimerCallbackT
-    { Options       *  options
-    ; SignalEmitter *  signalemitter
-    ; GroupsT       *  groups
-    ; int              class[2]
+    { GroupsT       * groups
+    ; Options       * options
+    ; SignalEmitter * signalemitter
+    ; int             class[2]
     ;
     } TimerCallbackT;
 
-static void timerCB ( CallbackDataT * );
+static void timerCallback ( CallbackDataT * );
 
 static void signalHandler ( int, siginfo_t *, void * );
 
@@ -93,7 +93,7 @@ int main ( int argc, char ** argv ) {
     IdleTimerCallbackT idletimercallback;
     idletimercallback.data = &timercb;
     callback.data = &idletimercallback;
-    callback.run  = timerCB;
+    callback.run  = timerCallback;
 
     runXTimer ( &xtimer, &callback );
 
@@ -109,7 +109,7 @@ int main ( int argc, char ** argv ) {
 
 }
 
-static void timerCB ( CallbackDataT * data ) {
+static void timerCallback ( CallbackDataT * data ) {
 
     IdleTimerCallbackT    * itc        = (IdleTimerCallbackT *) data;
     XTimerT               * xtimer     = itc->xtimer;
