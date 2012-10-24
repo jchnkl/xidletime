@@ -75,7 +75,7 @@ int main ( int argc, char ** argv ) {
     itd.attributes = &attributes;
     itd.idletime = options.idletime * 1000;
 
-    initIdleTimer ( &itd );
+    initXTimer ( &itd );
 
     // initialize dbus signal emitter
     DBusConfig dbusconfig;
@@ -96,7 +96,7 @@ int main ( int argc, char ** argv ) {
     callback.data = &idletimercallback;
     callback.run  = idleTimerCallback;
 
-    runTimer ( &itd, &callback );
+    runXTimer ( &itd, &callback );
 
     dumpGroup ( &group[0] );
     finalizeGroup ( &group[0] );
