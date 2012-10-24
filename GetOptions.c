@@ -5,6 +5,8 @@
 #include <string.h>
 #include <getopt.h>
 
+#include "Config.h"
+
 static void usage ( const char * name ) {
     int i, noptions = 6;
     const char * options[] =
@@ -72,12 +74,14 @@ void getoptions ( Options * options, int argc, char ** argv ) {
        }
    }
 
-   if ( options->idlefile      == NULL
-     || options->timeoutfile   == NULL
-     || options->busName       == NULL
-     || options->objectPath    == NULL
-     || options->interfaceName == NULL
-      )
+   if ( options->idlefile == NULL || options->timeoutfile == NULL )
        usage ( argv[0] );
+
+    options->busName =
+        options->busName == NULL ? busName : options->busName;
+    options->objectPath =
+        options->objectPath == NULL ? objectPath : options->objectPath;
+    options->interfaceName =
+        options->interfaceName == NULL ? interfaceName : options->interfaceName;
 
 }
