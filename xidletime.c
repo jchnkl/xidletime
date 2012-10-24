@@ -9,7 +9,7 @@
 #include <X11/extensions/sync.h>
 
 #include "Callback.h"
-#include "IdleTimer.h"
+#include "XTimer.h"
 #include "GetOptions.h"
 #include "KMeansCluster.h"
 #include "SignalHandler.h"

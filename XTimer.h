@@ -1,5 +1,5 @@
-#ifndef __IDLETIMER_H
-#define __IDLETIMER_H
+#ifndef __XTIMER_H
+#define __XTIMER_H
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
