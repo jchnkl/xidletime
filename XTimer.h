@@ -15,7 +15,7 @@ typedef struct XTimerT
     ; int                    minor         // minor version
     ; int                    ev_base       // offset for event ptr
     ; int                    err_base      // offset for error
-    ; int                    idletime      // timeout for idle alarm
+    ; uint                   idletime      // timeout for idle alarm
     ; ulong                  flags         // flags for attributes
     ; Time                   lastEventTime // time of last event
     ; XSyncAlarm             alarm         // alarm id
