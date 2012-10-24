@@ -66,7 +66,12 @@ void runXTimer ( XTimerT * xtimer, CallbackT * callback ) {
                 }
             }
 
-            XSyncChangeAlarm ( xtimer->dpy, xtimer->alarm, xtimer->flags, xtimer->attributes );
+            XSyncChangeAlarm ( xtimer->dpy
+                             , xtimer->alarm
+                             , xtimer->flags
+                             , xtimer->attributes
+                             );
+
             xtimer->lastEventTime = alarmEvent->time;
         }
 
