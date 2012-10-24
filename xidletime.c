@@ -15,27 +15,29 @@
 #include "SignalHandler.h"
 #include "DBusSignalEmitter.h"
 
-typedef struct CallbackData
+typedef struct TimerCallbackT
     { Options       *  options
     ; SignalEmitter *  signalemitter
     ; GroupsT       *  groups
     ; int              newIdletime
     ; int              class[2]
+    ; CallbackDataT * data;
     ;
-    } CallbackData;
+    } TimerCallbackT;
 
-static void idleTimerCallback ( CallbackDataT * callback );
+// static void timerCallback ( CallbackT * callback );
+static void timerCB ( CallbackDataT * );
 
 static void signalHandler ( int, siginfo_t *, void * );
 
 int main ( int argc, char ** argv ) {
 
-    CallbackData cd; memset ( &cd, 0, sizeof ( CallbackData ) );
+    TimerCallbackT timercb; memset ( &timercb, 0, sizeof ( TimerCallbackT ) );
 
     Options options;
     getoptions ( &options, argc, argv );
-    cd.options = &options;
-    cd.newIdletime = options.idletime * 1000;
+    timercb.options = &options;
+    timercb.newIdletime = options.idletime * 1000;
 
     const char * seed[2];
     seed[0] = options.idlefile;
@@ -52,10 +54,10 @@ int main ( int argc, char ** argv ) {
     groups.ngroups = 2;
     groups.groups  = &group[0];
     makeGroups ( initMeans, &groups, size, comp, seed );
-    cd.groups    = &groups;
+    timercb.groups    = &groups;
 
-    cd.class[0]  = size[0] - 1;
-    cd.class[1]  = size[1] - 1;
+    timercb.class[0]  = size[0] - 1;
+    timercb.class[1]  = size[1] - 1;
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
     initializeSignalData ( &groups );
@@ -87,14 +89,14 @@ int main ( int argc, char ** argv ) {
     SignalEmitter signalemitter;
     getSignalEmitter ( &dbusconfig, &signalemitter );
 
-    cd.signalemitter = &signalemitter;
+    timercb.signalemitter = &signalemitter;
     // dbus signal emitter init done
 
     CallbackT callback;
     IdleTimerCallbackT idletimercallback;
-    idletimercallback.data = &cd;
+    idletimercallback.data = &timercb;
     callback.data = &idletimercallback;
-    callback.run  = idleTimerCallback;
+    callback.run  = timerCB;
 
     runXTimer ( &xtimer, &callback );
 
@@ -110,16 +112,16 @@ int main ( int argc, char ** argv ) {
 
 }
 
-static void idleTimerCallback ( CallbackDataT * data ) {
+static void timerCB ( CallbackDataT * data ) {
 
     IdleTimerCallbackT    * itc        = (IdleTimerCallbackT *) data;
     XTimerT               * xtimer     = itc->xtimer;
     XSyncAlarmNotifyEvent * alarmEvent = itc->xsane;
-    CallbackData          * cd         = (CallbackData       *) itc->data;
 
-    Options               * opts       = (Options            *) cd->options;
-    SignalEmitter         * se         = (SignalEmitter      *) cd->signalemitter;
-    GroupsT               * groups     = (GroupsT            *) cd->groups;
+    TimerCallbackT        * timercb    = (TimerCallbackT     *) itc->data;
+    Options               * opts       = (Options            *) timercb->options;
+    SignalEmitter         * se         = (SignalEmitter      *) timercb->signalemitter;
+    GroupsT               * groups     = (GroupsT            *) timercb->groups;
 
     if ( itc->status == Reset ) {
 #ifdef DEBUG_CALLBACK
@@ -129,7 +131,7 @@ static void idleTimerCallback ( CallbackDataT * data ) {
 
         uint time = alarmEvent->time - xtimer->lastEventTime;
 
-        cd->class[0] = addValue ( &(groups->groups[0]), &time );
+        timercb->class[0] = addValue ( &(groups->groups[0]), &time );
 
         FILE * stream = fopen ( groups->groups[0].seed, "a" );
         fwrite ( &time, sizeof ( uint ), 1, stream );
@@ -142,32 +144,33 @@ static void idleTimerCallback ( CallbackDataT * data ) {
         // double base = strtod ( argv[1], NULL );
         double base = opts->base;
         double prob = -1.0 * log(groups->groups[0].size/base) / log(base)
-                    + log(cd->class[0] + 1.0) / log(base);
+                    + log(timercb->class[0] + 1.0) / log(base);
 
-        double weight = (cd->class[1] + 1.0) / (double)(groups->groups[1].size);
+        double weight = (timercb->class[1] + 1.0) / (double)(groups->groups[1].size);
 
-        int newtime = (double)(cd->newIdletime) * weight * prob;
+        int newtime = (double)(timercb->newIdletime) * weight * prob;
 
         if ( newtime >= xtimer->idletime ) {
-            cd->newIdletime = newtime;
+            timercb->newIdletime = newtime;
 
-            cd->class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
+            timercb->class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
 
             FILE * stream = fopen ( groups->groups[1].seed, "a" );
             fwrite ( &newtime, sizeof ( uint ), 1, stream );
             fclose ( stream );
 
-            XSyncValue value;
-            XSyncIntToValue ( &value, newtime );
-            xtimer->attributes->trigger.wait_value = value;
+            setXIdleTime ( xtimer, newtime );
+            // XSyncValue value;
+            // XSyncIntToValue ( &value, newtime );
+            // xtimer->attributes->trigger.wait_value = value;
         }
 
 #ifdef DEBUG_CALLBACK
     fprintf ( stderr
             , "time: %u\tclass[0]: %i\tclass[1]: %i\nprob: %f\tweight: %f\tnewtime: %i\n"
             , time
-            , cd->class[0]
-            , cd->class[1]
+            , timercb->class[0]
+            , timercb->class[1]
             , prob
             , weight
             , newtime
