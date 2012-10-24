@@ -121,17 +121,21 @@ static void timerCB ( CallbackDataT * data ) {
     SignalEmitter         * se         = (SignalEmitter      *) timercb->signalemitter;
     GroupsT               * groups     = (GroupsT            *) timercb->groups;
 
+    FILE * stream;
+    uint time, newtime;
+    double prob, weight, base = opts->base;
+
     if ( itc->status == Reset ) {
 #ifdef DEBUG_CALLBACK
         fprintf ( stderr, "Reset\n" );
 #endif
         se->emitSignal ( se, "Reset" );
 
-        uint time = alarmEvent->time - xtimer->lastEventTime;
+        time = alarmEvent->time - xtimer->lastEventTime;
 
         timercb->class[0] = addValue ( &(groups->groups[0]), &time );
 
-        FILE * stream = fopen ( groups->groups[0].seed, "a" );
+        stream = fopen ( groups->groups[0].seed, "a" );
         fwrite ( &time, sizeof ( uint ), 1, stream );
         fclose ( stream );
 
@@ -140,18 +144,17 @@ static void timerCB ( CallbackDataT * data ) {
         // plot [0:99] (-1.0 * log(100/base) / log(base)) + log(x) / log(base)
 
         // double base = strtod ( argv[1], NULL );
-        double base = opts->base;
-        double prob = -1.0 * log(groups->groups[0].size/base) / log(base)
-                    + log(timercb->class[0] + 1.0) / log(base);
+        prob = -1.0 * log(groups->groups[0].size/base) / log(base)
+             + log(timercb->class[0] + 1.0) / log(base);
 
-        double weight = (timercb->class[1] + 1.0) / (double)(groups->groups[1].size);
+        weight = (timercb->class[1] + 1.0) / (double)(groups->groups[1].size);
 
         newtime = (double)( getXIdleTime ( xtimer ) ) * weight * prob;
 
         if ( newtime >= options->idletime ) {
             timercb->class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
 
-            FILE * stream = fopen ( groups->groups[1].seed, "a" );
+            stream = fopen ( groups->groups[1].seed, "a" );
             fwrite ( &newtime, sizeof ( uint ), 1, stream );
             fclose ( stream );
 
