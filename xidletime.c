@@ -116,13 +116,13 @@ static void timerCallback ( CallbackDataT * data ) {
     XSyncAlarmNotifyEvent * alarmEvent = itc->xsane;
 
     TimerCallbackT        * timercb    = (TimerCallbackT     *) itc->data;
-    Options               * opts       = (Options            *) timercb->options;
+    Options               * options    = (Options        *) timercb->options;
     SignalEmitter         * se         = (SignalEmitter      *) timercb->signalemitter;
     GroupsT               * groups     = (GroupsT            *) timercb->groups;
 
     FILE * stream;
     uint time, newtime;
-    double prob, weight, base = opts->base;
+    double prob, weight, base = options->base;
 
     if ( itc->status == Reset ) {
 #ifdef DEBUG_CALLBACK
