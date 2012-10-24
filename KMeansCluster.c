@@ -18,7 +18,7 @@ int compFill ( const void *clusterl, const void *clusterr ) {
     return ((ClusterT *)clusterl)->fillcount > ((ClusterT *)clusterr)->fillcount;
 }
 
-CmpFunT cmp_fun[] =
+static CmpFunT cmp_fun[] =
     { compMean
     , compFill
     };
