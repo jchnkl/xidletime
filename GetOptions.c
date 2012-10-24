@@ -10,7 +10,7 @@
 static void usage ( const char * name ) {
     int i, noptions = 6;
     const char * options[] =
-        { "[-i|--idlefile]"
+        { "[-i|--idletime]"
         , "[-b|--base]"
         , "[-f|--idlefile]"
         , "[-t|--timeoutfile]"
