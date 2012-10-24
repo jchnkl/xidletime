@@ -77,3 +77,12 @@ void runXTimer ( XTimerT * xtimer, CallbackT * callback ) {
 
     }
 }
+
+int setXIdleTime ( XTimerT * xtimer, uint idletime ) {
+    if ( xtimer == NULL ) return -1;
+    xtimer->idletime = idletime;
+    XSyncValue value;
+    XSyncIntToValue ( &value, idletime );
+    xtimer->attributes->trigger.wait_value = value;
+    return 0;
+}

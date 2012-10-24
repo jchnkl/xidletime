@@ -23,16 +23,18 @@ typedef struct XTimerT
     ;
     } XTimerT;
 
-typedef struct IdleTimerCallbackT
+typedef struct XTimerCallbackT
     { TimerStatusT            status
     ; XTimerT               * xtimer
     ; XSyncAlarmNotifyEvent * xsane
     ; void                  * data
     ;
-    } IdleTimerCallbackT;
+    } XTimerCallbackT;
 
 void initXTimer ( XTimerT * );
 
 void runXTimer ( XTimerT *, CallbackT * );
+
+int setXIdleTime ( XTimerT * xtimer, uint idletime );
 
 #endif
