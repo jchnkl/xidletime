@@ -70,12 +70,12 @@ int main ( int argc, char ** argv ) {
 
     XSyncAlarmAttributes attributes;
 
-    XTimerT itd; memset ( &itd, 0, sizeof ( XTimerT ) );
-    itd.flags = flags;
-    itd.attributes = &attributes;
-    itd.idletime = options.idletime * 1000;
+    XTimerT xtimer; memset ( &xtimer, 0, sizeof ( XTimerT ) );
+    xtimer.flags = flags;
+    xtimer.attributes = &attributes;
+    xtimer.idletime = options.idletime * 1000;
 
-    initXTimer ( &itd );
+    initXTimer ( &xtimer );
 
     // initialize dbus signal emitter
     DBusConfig dbusconfig;
@@ -96,7 +96,7 @@ int main ( int argc, char ** argv ) {
     callback.data = &idletimercallback;
     callback.run  = idleTimerCallback;
 
-    runXTimer ( &itd, &callback );
+    runXTimer ( &xtimer, &callback );
 
     dumpGroup ( &group[0] );
     finalizeGroup ( &group[0] );
@@ -113,7 +113,7 @@ int main ( int argc, char ** argv ) {
 static void idleTimerCallback ( CallbackDataT * data ) {
 
     IdleTimerCallbackT    * itc        = (IdleTimerCallbackT *) data;
-    XTimerT         * itd        = itc->itd;
+    XTimerT               * xtimer     = itc->xtimer;
     XSyncAlarmNotifyEvent * alarmEvent = itc->xsane;
     CallbackData          * cd         = (CallbackData       *) itc->data;
 
@@ -127,7 +127,7 @@ static void idleTimerCallback ( CallbackDataT * data ) {
 #endif
         se->emitSignal ( se, "Reset" );
 
-        uint time = alarmEvent->time - itd->lastEventTime;
+        uint time = alarmEvent->time - xtimer->lastEventTime;
 
         cd->class[0] = addValue ( &(groups->groups[0]), &time );
 
@@ -148,7 +148,7 @@ static void idleTimerCallback ( CallbackDataT * data ) {
 
         int newtime = (double)(cd->newIdletime) * weight * prob;
 
-        if ( newtime >= itd->idletime ) {
+        if ( newtime >= xtimer->idletime ) {
             cd->newIdletime = newtime;
 
             cd->class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
@@ -159,7 +159,7 @@ static void idleTimerCallback ( CallbackDataT * data ) {
 
             XSyncValue value;
             XSyncIntToValue ( &value, newtime );
-            itd->attributes->trigger.wait_value = value;
+            xtimer->attributes->trigger.wait_value = value;
         }
 
 #ifdef DEBUG_CALLBACK

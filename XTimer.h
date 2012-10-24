@@ -25,7 +25,7 @@ typedef struct XTimerT
 
 typedef struct IdleTimerCallbackT
     { TimerStatusT            status
-    ; XTimerT         * itd
+    ; XTimerT               * xtimer
     ; XSyncAlarmNotifyEvent * xsane
     ; void                  * data
     ;

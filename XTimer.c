@@ -8,18 +8,18 @@ long XSyncValueToLong ( XSyncValue *value ) {
            );
 }
 
-void initXTimer ( XTimerT * itd ) {
+void initXTimer ( XTimerT * xtimer ) {
     int i, listCount = 0;
     XSyncSystemCounter * sysCounter = NULL, * counter = NULL;
     XSyncValue value[2];
 
-    itd->dpy = XOpenDisplay ("");
-    Window root = DefaultRootWindow ( itd->dpy );
-    XSelectInput ( itd->dpy, root, XSyncAlarmNotifyMask );
-    XSyncInitialize ( itd->dpy, &(itd->major), &(itd->minor) );
-    XSyncQueryExtension ( itd->dpy , &(itd->ev_base), &(itd->err_base) );
+    xtimer->dpy = XOpenDisplay ("");
+    Window root = DefaultRootWindow ( xtimer->dpy );
+    XSelectInput ( xtimer->dpy, root, XSyncAlarmNotifyMask );
+    XSyncInitialize ( xtimer->dpy, &(xtimer->major), &(xtimer->minor) );
+    XSyncQueryExtension ( xtimer->dpy , &(xtimer->ev_base), &(xtimer->err_base) );
 
-    sysCounter = XSyncListSystemCounters ( itd->dpy, &listCount );
+    sysCounter = XSyncListSystemCounters ( xtimer->dpy, &listCount );
 
     for ( i = 0; i < listCount; i++ ) {
         if ( 0 == strcmp ( sysCounter[i].name, "IDLETIME" ) ) {
@@ -28,51 +28,52 @@ void initXTimer ( XTimerT * itd ) {
     }
 
     XSyncIntToValue ( &value[0], 0 );
-    XSyncIntToValue ( &value[1], itd->idletime );
+    XSyncIntToValue ( &value[1], xtimer->idletime );
 
-    itd->attributes->trigger.counter    = counter->counter;
-    itd->attributes->trigger.value_type = XSyncAbsolute;
-    itd->attributes->trigger.test_type  = XSyncPositiveComparison;
-    itd->attributes->trigger.wait_value = value[1];
-    itd->attributes->delta              = value[0];
+    xtimer->attributes->trigger.counter    = counter->counter;
+    xtimer->attributes->trigger.value_type = XSyncAbsolute;
+    xtimer->attributes->trigger.test_type  = XSyncPositiveComparison;
+    xtimer->attributes->trigger.wait_value = value[1];
+    xtimer->attributes->delta              = value[0];
 
-    itd->alarm = XSyncCreateAlarm ( itd->dpy, itd->flags, itd->attributes );
+    xtimer->alarm =
+        XSyncCreateAlarm ( xtimer->dpy, xtimer->flags, xtimer->attributes );
 }
 
-void runXTimer ( XTimerT * itd, CallbackT * callback ) {
+void runXTimer ( XTimerT * xtimer, CallbackT * callback ) {
 
     XEvent xEvent;
     XSyncAlarmNotifyEvent * alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
 
     IdleTimerCallbackT * itc = (IdleTimerCallbackT *) callback->data;
-    itc->itd   = itd;
+    itc->xtimer   = xtimer;
     itc->xsane = alarmEvent;
 
     while ( 1 ) {
-        XNextEvent ( itd->dpy, &xEvent );
+        XNextEvent ( xtimer->dpy, &xEvent );
 
-        if ( xEvent.type != itd->ev_base + XSyncAlarmNotify ) continue;
+        if ( xEvent.type != xtimer->ev_base + XSyncAlarmNotify ) continue;
 
-        if ( alarmEvent->alarm == itd->alarm ) {
+        if ( alarmEvent->alarm == xtimer->alarm ) {
             if ( XSyncValueLessThan ( alarmEvent->counter_value
                                     , alarmEvent->alarm_value
                                     )
                ) {
-                itd->attributes->trigger.test_type = XSyncPositiveComparison;
-                if ( itd->lastEventTime != alarmEvent->time ) {
+                xtimer->attributes->trigger.test_type = XSyncPositiveComparison;
+                if ( xtimer->lastEventTime != alarmEvent->time ) {
                     itc->status = Reset;
                     callback->run ( callback->data );
                 }
             } else {
-                itd->attributes->trigger.test_type = XSyncNegativeComparison;
-                if ( itd->lastEventTime != alarmEvent->time ) {
+                xtimer->attributes->trigger.test_type = XSyncNegativeComparison;
+                if ( xtimer->lastEventTime != alarmEvent->time ) {
                     itc->status = Idle;
                     callback->run ( callback->data );
                 }
             }
 
-            XSyncChangeAlarm ( itd->dpy, itd->alarm, itd->flags, itd->attributes );
-            itd->lastEventTime = alarmEvent->time;
+            XSyncChangeAlarm ( xtimer->dpy, xtimer->alarm, xtimer->flags, xtimer->attributes );
+            xtimer->lastEventTime = alarmEvent->time;
         }
 
     }
