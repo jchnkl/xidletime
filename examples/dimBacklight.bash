@@ -10,7 +10,7 @@ coproc {
     dbus-monitor --profile --session "type='signal',sender='org.xidletime'"
 }
 
-trap "pkill -P ${COPROC_PID}" EXIT
+trap "pkill -P ${COPROC_PID} 1>/dev/null 2>&1" EXIT
 
 while read -u ${COPROC[0]}; do
     case $REPLY in
@@ -24,7 +24,7 @@ while read -u ${COPROC[0]}; do
         *Reset*)
             echo "Reset"
             if [ ${DIMMING} -eq 1 -a -n "${DIMPID}" ]; then
-                kill ${DIMPID} 2>&1 >/dev/null
+                kill ${DIMPID} 1>/dev/null 2>&1
             fi
             xbacklight -time 0 -set ${BLSTATE}
             DIMMING=0
