@@ -150,7 +150,7 @@ static void timerCB ( CallbackDataT * data ) {
 
         int newtime = (double)(timercb->newIdletime) * weight * prob;
 
-        if ( newtime >= xtimer->idletime ) {
+        if ( newtime >= options->idletime ) {
             timercb->newIdletime = newtime;
 
             timercb->class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
