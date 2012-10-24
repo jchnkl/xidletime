@@ -24,7 +24,7 @@ typedef struct CallbackData
     ;
     } CallbackData;
 
-static void idleTimerCallback ( CallbackT * );
+static void idleTimerCallback ( CallbackDataT * callback );
 
 static void signalHandler ( int, siginfo_t *, void * );
 
@@ -110,9 +110,9 @@ int main ( int argc, char ** argv ) {
 
 }
 
-static void idleTimerCallback ( CallbackT * callback ) {
+static void idleTimerCallback ( CallbackDataT * data ) {
 
-    IdleTimerCallbackT    * itc        = (IdleTimerCallbackT *) callback->data;
+    IdleTimerCallbackT    * itc        = (IdleTimerCallbackT *) data;
     IdleTimerData         * itd        = itc->itd;
     XSyncAlarmNotifyEvent * alarmEvent = itc->xsane;
     CallbackData          * cd         = (CallbackData       *) itc->data;

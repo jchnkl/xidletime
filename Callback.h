@@ -1,9 +1,13 @@
 #ifndef __CALLBACK_H
 #define __CALLBACK_H
 
+typedef void * CallbackDataT;
+
+typedef void ( * CallbackFunctionT ) ( CallbackDataT * );
+
 typedef struct CallbackT
-    { void * data
-    ; void ( * run ) ( struct CallbackT * )
+    { CallbackDataT     data
+    ; CallbackFunctionT run
     ;
     } CallbackT;
 

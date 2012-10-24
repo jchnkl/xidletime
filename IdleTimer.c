@@ -61,13 +61,13 @@ void runTimer ( IdleTimerData * itd, CallbackT * callback ) {
                 itd->attributes->trigger.test_type = XSyncPositiveComparison;
                 if ( itd->lastEventTime != alarmEvent->time ) {
                     itc->status = Reset;
-                    callback->run ( callback );
+                    callback->run ( callback->data );
                 }
             } else {
                 itd->attributes->trigger.test_type = XSyncNegativeComparison;
                 if ( itd->lastEventTime != alarmEvent->time ) {
                     itc->status = Idle;
-                    callback->run ( callback );
+                    callback->run ( callback->data );
                 }
             }
 
