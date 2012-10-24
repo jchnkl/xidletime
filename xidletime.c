@@ -111,11 +111,11 @@ static void timerCallback ( XTimerCallbackT * xtcallback ) {
     XTimerT               * xtimer     = xtcallback->xtimer;
     XSyncAlarmNotifyEvent * alarmEvent = xtcallback->xsane;
 
-
     TimerCallbackT        * timercb    = (TimerCallbackT *) xtcallback->data;
+
     Options               * options    = (Options        *) timercb->options;
-    SignalEmitter         * se         = (SignalEmitter      *) timercb->signalemitter;
-    GroupsT               * groups     = (GroupsT            *) timercb->groups;
+    SignalEmitter         * se         = (SignalEmitter  *) timercb->signalemitter;
+    GroupsT               * groups     = (GroupsT        *) timercb->groups;
 
     FILE * stream;
     uint time, newtime;
