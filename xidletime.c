@@ -23,7 +23,7 @@ typedef struct TimerCallbackT
     ;
     } TimerCallbackT;
 
-static void timerCallback ( CallbackDataT * );
+static void timerCallback ( XTimerCallbackT * xtcallback );
 
 static void signalHandler ( int, siginfo_t *, void * );
 
@@ -88,14 +88,11 @@ int main ( int argc, char ** argv ) {
 
     initXTimer ( &xtimer );
 
+    XTimerCallbackT xTimerCallback;
+    xTimerCallback.data = &timercb;
+    xTimerCallback.run  = timerCallback;
 
-    CallbackT callback;
-    IdleTimerCallbackT idletimercallback;
-    idletimercallback.data = &timercb;
-    callback.data = &idletimercallback;
-    callback.run  = timerCallback;
-
-    runXTimer ( &xtimer, &callback );
+    runXTimer ( &xtimer, &xTimerCallback );
 
     dumpGroup ( &group[0] );
     finalizeGroup ( &group[0] );
@@ -109,13 +106,13 @@ int main ( int argc, char ** argv ) {
 
 }
 
-static void timerCallback ( CallbackDataT * data ) {
+static void timerCallback ( XTimerCallbackT * xtcallback ) {
 
-    IdleTimerCallbackT    * itc        = (IdleTimerCallbackT *) data;
-    XTimerT               * xtimer     = itc->xtimer;
-    XSyncAlarmNotifyEvent * alarmEvent = itc->xsane;
+    XTimerT               * xtimer     = xtcallback->xtimer;
+    XSyncAlarmNotifyEvent * alarmEvent = xtcallback->xsane;
 
-    TimerCallbackT        * timercb    = (TimerCallbackT     *) itc->data;
+
+    TimerCallbackT        * timercb    = (TimerCallbackT *) xtcallback->data;
     Options               * options    = (Options        *) timercb->options;
     SignalEmitter         * se         = (SignalEmitter      *) timercb->signalemitter;
     GroupsT               * groups     = (GroupsT            *) timercb->groups;
@@ -124,7 +121,7 @@ static void timerCallback ( CallbackDataT * data ) {
     uint time, newtime;
     double prob, weight, base = options->base;
 
-    if ( itc->status == Reset ) {
+    if ( xtcallback->status == Reset ) {
 #ifdef DEBUG_CALLBACK
         fprintf ( stderr, "Reset\n" );
 #endif

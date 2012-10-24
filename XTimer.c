@@ -34,14 +34,13 @@ void initXTimer ( XTimerT * xtimer ) {
         XSyncCreateAlarm ( xtimer->dpy, xtimer->flags, xtimer->attributes );
 }
 
-void runXTimer ( XTimerT * xtimer, CallbackT * callback ) {
+void runXTimer ( XTimerT * xtimer, XTimerCallbackT * xtcallback ) {
 
     XEvent xEvent;
     XSyncAlarmNotifyEvent * alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
 
-    IdleTimerCallbackT * itc = (IdleTimerCallbackT *) callback->data;
-    itc->xtimer   = xtimer;
-    itc->xsane = alarmEvent;
+    xtcallback->xtimer = xtimer;
+    xtcallback->xsane  = alarmEvent;
 
     while ( 1 ) {
         XNextEvent ( xtimer->dpy, &xEvent );
@@ -55,14 +54,14 @@ void runXTimer ( XTimerT * xtimer, CallbackT * callback ) {
                ) {
                 xtimer->attributes->trigger.test_type = XSyncPositiveComparison;
                 if ( xtimer->lastEventTime != alarmEvent->time ) {
-                    itc->status = Reset;
-                    callback->run ( callback->data );
+                    xtcallback->status = Reset;
+                    xtcallback->run ( xtcallback );
                 }
             } else {
                 xtimer->attributes->trigger.test_type = XSyncNegativeComparison;
                 if ( xtimer->lastEventTime != alarmEvent->time ) {
-                    itc->status = Idle;
-                    callback->run ( callback->data );
+                    xtcallback->status = Idle;
+                    xtcallback->run ( xtcallback );
                 }
             }
 
