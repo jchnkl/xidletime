@@ -19,7 +19,6 @@ typedef struct TimerCallbackT
     { Options       *  options
     ; SignalEmitter *  signalemitter
     ; GroupsT       *  groups
-    ; int              newIdletime
     ; int              class[2]
     ;
     } TimerCallbackT;
@@ -36,7 +35,6 @@ int main ( int argc, char ** argv ) {
     Options options;
     getoptions ( &options, argc, argv );
     timercb.options = &options;
-    timercb.newIdletime = options.idletime;
 
     const char * seed[2];
     seed[0] = options.idlefile;
@@ -147,11 +145,9 @@ static void timerCB ( CallbackDataT * data ) {
 
         double weight = (timercb->class[1] + 1.0) / (double)(groups->groups[1].size);
 
-        int newtime = (double)(timercb->newIdletime) * weight * prob;
+        newtime = (double)( getXIdleTime ( xtimer ) ) * weight * prob;
 
         if ( newtime >= options->idletime ) {
-            timercb->newIdletime = newtime;
-
             timercb->class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
 
             FILE * stream = fopen ( groups->groups[1].seed, "a" );

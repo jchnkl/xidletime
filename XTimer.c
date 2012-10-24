@@ -78,6 +78,10 @@ void runXTimer ( XTimerT * xtimer, CallbackT * callback ) {
     }
 }
 
+uint getXIdleTime ( XTimerT * xtimer ) {
+    return xtimer->idletime;
+}
+
 int setXIdleTime ( XTimerT * xtimer, uint idletime ) {
     if ( xtimer == NULL ) return -1;
     xtimer->idletime = idletime;

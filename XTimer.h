@@ -35,6 +35,8 @@ void initXTimer ( XTimerT * );
 
 void runXTimer ( XTimerT *, CallbackT * );
 
+uint getXIdleTime ( XTimerT * xtimer );
+
 int setXIdleTime ( XTimerT * xtimer, uint idletime );
 
 #endif
