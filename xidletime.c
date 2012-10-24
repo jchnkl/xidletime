@@ -37,7 +37,7 @@ int main ( int argc, char ** argv ) {
     Options options;
     getoptions ( &options, argc, argv );
     timercb.options = &options;
-    timercb.newIdletime = options.idletime * 1000;
+    timercb.newIdletime = options.idletime;
 
     const char * seed[2];
     seed[0] = options.idlefile;
@@ -47,7 +47,7 @@ int main ( int argc, char ** argv ) {
     unsigned int size[] = { 100, 10 };
     CmpTypeT comp[] = { MEAN, FILL };
     int initMeans ( int m, int s ) {
-        return (int)((double)(options.idletime * 1000) * (double)m / (double)s);
+        return (int)((double)(options.idletime) * (double)m / (double)s);
     }
 
     GroupsT groups;
@@ -75,7 +75,7 @@ int main ( int argc, char ** argv ) {
     XTimerT xtimer; memset ( &xtimer, 0, sizeof ( XTimerT ) );
     xtimer.flags = flags;
     xtimer.attributes = &attributes;
-    xtimer.idletime = options.idletime * 1000;
+    xtimer.idletime = options.idletime;
 
     initXTimer ( &xtimer );
 

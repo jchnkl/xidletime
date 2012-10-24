@@ -53,7 +53,7 @@ void getoptions ( Options * options, int argc, char ** argv ) {
 
        switch ( choice ) {
            case   0:
-           case 'i': options->idletime      = strtol ( optarg, NULL, 10 ); break;
+           case 'i': options->idletime      = strtol ( optarg, NULL, 10 ) * 1000; break;
            case   1:
            case 'b': options->base          = strtod ( optarg, NULL ); break;
            case   2:
