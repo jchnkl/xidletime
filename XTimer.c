@@ -8,10 +8,6 @@ void initXTimer ( XTimerT * xtimer ) {
     XSyncValue value[2];
 
     xtimer->dpy = XOpenDisplay ("");
-    Window root = DefaultRootWindow ( xtimer->dpy );
-    XSelectInput ( xtimer->dpy, root, XSyncAlarmNotifyMask );
-    XSyncInitialize ( xtimer->dpy, &(xtimer->major), &(xtimer->minor) );
-    XSyncQueryExtension ( xtimer->dpy , &(xtimer->ev_base), &(xtimer->err_base) );
 
     sysCounter = XSyncListSystemCounters ( xtimer->dpy, &listCount );
 
@@ -36,8 +32,16 @@ void initXTimer ( XTimerT * xtimer ) {
 
 void runXTimer ( XTimerT * xtimer, XTimerCallbackT * xtcallback ) {
 
+    int xsMajor,  xsMinor, xsEvBase, xsErrBase;
+
     XEvent xEvent;
     XSyncAlarmNotifyEvent * alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
+
+    Window root = DefaultRootWindow ( xtimer->dpy );
+    XSyncInitialize ( xtimer->dpy, &xsMajor, &xsMinor );
+    XSyncQueryExtension ( xtimer->dpy , &xsEvBase, &xsErrBase );
+
+    XSelectInput ( xtimer->dpy, root, XSyncAlarmNotifyMask );
 
     xtcallback->xtimer = xtimer;
     xtcallback->xsane  = alarmEvent;

@@ -9,10 +9,6 @@ typedef enum TimerStatusT { Idle=0, Reset } TimerStatusT;
 
 typedef struct XTimerT
     { Display              * dpy           // ptr to display
-    ; int                    major         // major version
-    ; int                    minor         // minor version
-    ; int                    ev_base       // offset for event ptr
-    ; int                    err_base      // offset for error
     ; uint                   idletime      // timeout for idle alarm
     ; ulong                  flags         // flags for attributes
     ; Time                   lastEventTime // time of last event
