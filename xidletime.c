@@ -4,6 +4,10 @@
 #include <signal.h>
 #include <math.h>
 
+#ifdef DEBUG_CALLBACK
+#include <sys/ioctl.h>
+#endif
+
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/sync.h>
@@ -157,15 +161,48 @@ static void timerCallback ( XTimerCallbackT * xtcallback ) {
         }
 
 #ifdef DEBUG_CALLBACK
-    fprintf ( stderr
-            , "time: %u\tclass[0]: %i\tclass[1]: %i\nprob: %f\tweight: %f\tnewtime: %i\n"
-            , time
-            , timercb->class[0]
-            , timercb->class[1]
-            , prob
-            , weight
-            , newtime
-            );
+    struct winsize ws;
+    ioctl ( 0, TIOCGWINSZ, &ws );
+
+    typedef enum TypT { INT=0, UINT, DOUBLE } TypT;
+
+    void showTypedValue ( char * dst, TypT typ, void * val ) {
+        switch (typ) {
+            case INT:    sprintf ( dst, "%i",    * (int *) val ); break;
+            case UINT:   sprintf ( dst, "%u",   * (uint *) val ); break;
+            case DOUBLE: sprintf ( dst, "%f", * (double *) val ); break;
+        }
+    }
+
+    typedef struct DebugInfoT
+        { char * txt
+        ; TypT typ
+        ; void * val
+        // ; ValueT
+        ;
+        } DebugInfoT;
+
+    DebugInfoT debuginfo[] =
+        { { "time: ",     UINT,   &time                }
+        , { "class[0]: ", INT,    &(timercb->class[0]) }
+        , { "class[1]: ", INT,    &(timercb->class[1]) }
+        , { "prob: ",     DOUBLE, &prob                }
+        , { "weight: ",   DOUBLE, &weight              }
+        , { "newtime: ",  UINT,   &newtime             }
+        , { NULL,         0,      NULL                 }
+        };
+
+    uint n = -1, printed = 0, maxlen = 16; char buf[maxlen];
+    while ( debuginfo[++n].txt != NULL ) {
+        showTypedValue ( buf, debuginfo[n].typ, debuginfo[n].val );
+        printed += fprintf ( stderr, "%s%s\t", debuginfo[n].txt, buf );
+        if ( printed + maxlen > ws.ws_col ) {
+            printed = 0;
+            fprintf ( stderr, "\n" );
+        }
+    }
+    fprintf ( stderr, "\n" );
+
 #endif
 
     } else {
