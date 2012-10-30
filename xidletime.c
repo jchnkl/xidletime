@@ -3,6 +3,7 @@
 #include <string.h>
 #include <signal.h>
 #include <math.h>
+#include <sys/time.h>
 
 #ifdef DEBUG_CALLBACK
 #include <sys/ioctl.h>
@@ -23,6 +24,7 @@ typedef struct TimerCallbackT
     { GroupsT       * groups
     ; Options       * options
     ; SignalEmitter * signalemitter
+    ; struct timeval   lastTime
     ; int             class[2]
     ;
     } TimerCallbackT;
@@ -58,6 +60,8 @@ int main ( int argc, char ** argv ) {
 
     timercb.class[0]  = size[0] - 1;
     timercb.class[1]  = size[1] - 1;
+    gettimeofday ( &timercb.lastTime, NULL );
+
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
     initializeSignalData ( &groups );
@@ -122,8 +126,11 @@ static void timerCallback ( XTimerCallbackT * xtcallback ) {
     GroupsT               * groups     = (GroupsT        *) timercb->groups;
 
     FILE * stream;
+    struct timeval tv;
     uint time, newtime;
     double prob, weight, base = options->base;
+
+    gettimeofday ( &tv, NULL );
 
     if ( xtcallback->status == Reset ) {
 #ifdef DEBUG_CALLBACK
@@ -131,7 +138,9 @@ static void timerCallback ( XTimerCallbackT * xtcallback ) {
 #endif
         se->emitSignal ( se, "Reset" );
 
-        time = alarmEvent->time - xtimer->lastEventTime;
+        time = tv.tv_sec * 1000 + tv.tv_usec / 1000
+             - timercb->lastTime.tv_sec * 1000
+             - timercb->lastTime.tv_usec / 1000;
 
         timercb->class[0] = addValue ( &(groups->groups[0]), &time );
 
@@ -212,6 +221,8 @@ static void timerCallback ( XTimerCallbackT * xtcallback ) {
 #endif
         se->emitSignal ( se, "Idle" );
     }
+
+    timercb->lastTime = tv;
 
 }
 
