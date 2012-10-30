@@ -164,12 +164,13 @@ static void timerCallback ( XTimerCallbackT * xtcallback ) {
     struct winsize ws;
     ioctl ( 0, TIOCGWINSZ, &ws );
 
-    typedef enum TypT { INT=0, UINT, DOUBLE } TypT;
+    typedef enum TypT { INT=0, UINT, ULONG, DOUBLE } TypT;
 
     void showTypedValue ( char * dst, TypT typ, void * val ) {
         switch (typ) {
             case INT:    sprintf ( dst, "%i",    * (int *) val ); break;
             case UINT:   sprintf ( dst, "%u",   * (uint *) val ); break;
+            case ULONG:  sprintf ( dst, "%lu", * (ulong *) val ); break;
             case DOUBLE: sprintf ( dst, "%f", * (double *) val ); break;
         }
     }
