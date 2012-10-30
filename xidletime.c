@@ -21,11 +21,11 @@
 #include "DBusSignalEmitter.h"
 
 typedef struct TimerCallbackT
-    { GroupsT       * groups
-    ; Options       * options
-    ; SignalEmitter * signalemitter
+    { GroupsT        * groups
+    ; Options        * options
+    ; SignalEmitter  * signalemitter
     ; struct timeval   lastTime
-    ; int             class[2]
+    ; int              class[2]
     ;
     } TimerCallbackT;
 
@@ -56,12 +56,11 @@ int main ( int argc, char ** argv ) {
     groups.ngroups = 2;
     groups.groups  = &group[0];
     makeGroups ( initMeans, &groups, size, comp, seed );
-    timercb.groups    = &groups;
+    timercb.groups = &groups;
 
     timercb.class[0]  = size[0] - 1;
     timercb.class[1]  = size[1] - 1;
     gettimeofday ( &timercb.lastTime, NULL );
-
 
     int signals[] = { SIGINT, SIGTERM, SIGUSR1 };
     initializeSignalData ( &groups );
@@ -79,8 +78,6 @@ int main ( int argc, char ** argv ) {
 
     timercb.signalemitter = &signalemitter;
     // dbus signal emitter init done
-
-
 
     XTimerT xtimer; memset ( &xtimer, 0, sizeof ( XTimerT ) );
     xtimer.idletime = options.idletime;
@@ -102,18 +99,17 @@ int main ( int argc, char ** argv ) {
     finalizeDBus ( &dbusconfig );
 
     return 0;
-
 }
 
 static void timerCallback ( XTimerCallbackT * xtcallback ) {
 
-    XTimerT               * xtimer     = xtcallback->xtimer;
+    XTimerT        * xtimer     = xtcallback->xtimer;
 
-    TimerCallbackT        * timercb    = (TimerCallbackT *) xtcallback->data;
+    TimerCallbackT * timercb    = (TimerCallbackT *) xtcallback->data;
 
-    Options               * options    = (Options        *) timercb->options;
-    SignalEmitter         * se         = (SignalEmitter  *) timercb->signalemitter;
-    GroupsT               * groups     = (GroupsT        *) timercb->groups;
+    Options        * options    = (Options        *) timercb->options;
+    SignalEmitter  * se         = (SignalEmitter  *) timercb->signalemitter;
+    GroupsT        * groups     = (GroupsT        *) timercb->groups;
 
     FILE * stream;
     struct timeval tv;

@@ -15,9 +15,9 @@ typedef struct XTimerT
     } XTimerT;
 
 typedef struct XTimerCallbackT
-    { TimerStatusT            status
-    ; XTimerT               * xtimer
-    ; void                  * data
+    { TimerStatusT   status
+    ; XTimerT      * xtimer
+    ; void         * data
     ; void ( * run ) ( struct XTimerCallbackT * )
     ;
     } XTimerCallbackT;
