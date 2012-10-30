@@ -3,79 +3,35 @@
 #include <string.h>
 
 void initXTimer ( XTimerT * xtimer ) {
-    int i, listCount = 0;
-    XSyncSystemCounter * sysCounter = NULL, * counter = NULL;
-    XSyncValue value[2];
-
     xtimer->dpy = XOpenDisplay ("");
-
-    sysCounter = XSyncListSystemCounters ( xtimer->dpy, &listCount );
-
-    for ( i = 0; i < listCount; i++ ) {
-        if ( 0 == strcmp ( sysCounter[i].name, "IDLETIME" ) ) {
-            counter = &sysCounter[i];
-        }
-    }
-
-    XSyncIntToValue ( &value[0], 0 );
-    XSyncIntToValue ( &value[1], xtimer->idletime );
-
-    xtimer->attributes->trigger.counter    = counter->counter;
-    xtimer->attributes->trigger.value_type = XSyncAbsolute;
-    xtimer->attributes->trigger.test_type  = XSyncPositiveComparison;
-    xtimer->attributes->trigger.wait_value = value[1];
-    xtimer->attributes->delta              = value[0];
-
-    xtimer->alarm =
-        XSyncCreateAlarm ( xtimer->dpy, xtimer->flags, xtimer->attributes );
+    XSetScreenSaver ( xtimer->dpy, xtimer->idletime / 1000, 0, False, False );
 }
 
 void runXTimer ( XTimerT * xtimer, XTimerCallbackT * xtcallback ) {
 
-    int xsMajor,  xsMinor, xsEvBase, xsErrBase;
+    int xssEvBase, xssErrBase;
 
     XEvent xEvent;
-    XSyncAlarmNotifyEvent * alarmEvent = (XSyncAlarmNotifyEvent *) &xEvent;
+    XScreenSaverNotifyEvent * xssEvent = (XScreenSaverNotifyEvent *) &xEvent;
 
     Window root = DefaultRootWindow ( xtimer->dpy );
-    XSyncInitialize ( xtimer->dpy, &xsMajor, &xsMinor );
-    XSyncQueryExtension ( xtimer->dpy , &xsEvBase, &xsErrBase );
 
-    XSelectInput ( xtimer->dpy, root, XSyncAlarmNotifyMask );
+    XScreenSaverQueryExtension ( xtimer->dpy, &xssEvBase, &xssErrBase );
+    XScreenSaverSelectInput ( xtimer->dpy, root, ScreenSaverNotifyMask );
 
     xtcallback->xtimer = xtimer;
-    xtcallback->xsane  = alarmEvent;
 
     while ( 1 ) {
         XNextEvent ( xtimer->dpy, &xEvent );
+        if ( xEvent.type != xssEvBase + ScreenSaverNotify ) continue;
 
-        if ( xEvent.type != xtimer->ev_base + XSyncAlarmNotify ) continue;
 
-        if ( alarmEvent->alarm == xtimer->alarm ) {
-            if ( XSyncValueLessThan ( alarmEvent->counter_value
-                                    , alarmEvent->alarm_value
-                                    )
-               ) {
-                xtimer->attributes->trigger.test_type = XSyncPositiveComparison;
-                if ( xtimer->lastEventTime != alarmEvent->time ) {
-                    xtcallback->status = Reset;
-                    xtcallback->run ( xtcallback );
-                }
-            } else {
-                xtimer->attributes->trigger.test_type = XSyncNegativeComparison;
-                if ( xtimer->lastEventTime != alarmEvent->time ) {
-                    xtcallback->status = Idle;
-                    xtcallback->run ( xtcallback );
-                }
-            }
-
-            XSyncChangeAlarm ( xtimer->dpy
-                             , xtimer->alarm
-                             , xtimer->flags
-                             , xtimer->attributes
-                             );
-
-            xtimer->lastEventTime = alarmEvent->time;
+        if ( xssEvent->state == ScreenSaverOn ) {
+            xtcallback->status = Idle;
+            xtcallback->run ( xtcallback );
+        } else {
+            xtcallback->status = Reset;
+            xtcallback->run ( xtcallback );
         }
 
     }
@@ -88,8 +44,6 @@ uint getXIdleTime ( XTimerT * xtimer ) {
 int setXIdleTime ( XTimerT * xtimer, uint idletime ) {
     if ( xtimer == NULL ) return -1;
     xtimer->idletime = idletime;
-    XSyncValue value;
-    XSyncIntToValue ( &value, idletime );
-    xtimer->attributes->trigger.wait_value = value;
+    XSetScreenSaver ( xtimer->dpy, xtimer->idletime / 1000, 0, False, False );
     return 0;
 }

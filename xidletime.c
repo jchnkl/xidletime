@@ -80,18 +80,9 @@ int main ( int argc, char ** argv ) {
     timercb.signalemitter = &signalemitter;
     // dbus signal emitter init done
 
-    ulong flags = XSyncCACounter
-                | XSyncCAValueType
-                | XSyncCATestType
-                | XSyncCAValue
-                | XSyncCADelta
-                ;
 
-    XSyncAlarmAttributes attributes;
 
     XTimerT xtimer; memset ( &xtimer, 0, sizeof ( XTimerT ) );
-    xtimer.flags = flags;
-    xtimer.attributes = &attributes;
     xtimer.idletime = options.idletime;
 
     initXTimer ( &xtimer );
@@ -117,7 +108,6 @@ int main ( int argc, char ** argv ) {
 static void timerCallback ( XTimerCallbackT * xtcallback ) {
 
     XTimerT               * xtimer     = xtcallback->xtimer;
-    XSyncAlarmNotifyEvent * alarmEvent = xtcallback->xsane;
 
     TimerCallbackT        * timercb    = (TimerCallbackT *) xtcallback->data;
 

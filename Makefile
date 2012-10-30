@@ -1,5 +1,5 @@
-CFLAGS=$(shell pkg-config --cflags dbus-1 x11 xext) -Wall -lm
-LDFLAGS=$(shell pkg-config --libs dbus-1 x11 xext)
+CFLAGS=$(shell pkg-config --cflags dbus-1 x11 xscrnsaver) -Wall -lm
+LDFLAGS=$(shell pkg-config --libs dbus-1 x11 xext xscrnsaver)
 
 EXE=xidletime
 OBJ=xidletime.o \
