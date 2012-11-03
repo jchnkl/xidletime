@@ -2,11 +2,11 @@
 
 #include <stdlib.h>
 
-static void dequeLock ( DequeT * dq ) {
+static void lockDeque ( DequeT * dq ) {
     pthread_mutex_lock ( &(dq->dequelock) );
 }
 
-static void dequeUnlock ( DequeT * dq ) {
+static void unlockDeque ( DequeT * dq ) {
     pthread_mutex_unlock ( &(dq->dequelock) );
 }
 
@@ -35,9 +35,9 @@ void destroyDeque ( DequeT * dq, void (* destroy) (ElementT *) ) {
 }
 
 int isEmpty ( DequeT * dq ) {
-    dequeLock ( dq );
+    lockDeque ( dq );
     int res = dq->head == NULL;
-    dequeUnlock ( dq );
+    unlockDeque ( dq );
     return res;
 }
 
@@ -46,7 +46,7 @@ void pushHead ( DequeT * dq, ElementT * e, ElementT * (* make) ( void ) ) {
     if ( e == NULL && make != NULL ) e = make();
     c->element = e;
 
-    dequeLock ( dq );
+    lockDeque ( dq );
 
     if ( dq->head == NULL ) {
         dq->head = c; dq->last = c;
@@ -56,7 +56,7 @@ void pushHead ( DequeT * dq, ElementT * e, ElementT * (* make) ( void ) ) {
         dq->head = c;
     }
 
-    dequeUnlock ( dq );
+    unlockDeque ( dq );
 }
 
 void pushLast ( DequeT * dq, ElementT * e, ElementT * (* make) ( void ) ) {
@@ -64,7 +64,7 @@ void pushLast ( DequeT * dq, ElementT * e, ElementT * (* make) ( void ) ) {
     if ( e == NULL && make != NULL ) e = make();
     c->element = e;
 
-    dequeLock ( dq );
+    lockDeque ( dq );
 
     if ( dq->last == NULL ) {
         dq->head = c; dq->last = c;
@@ -74,12 +74,12 @@ void pushLast ( DequeT * dq, ElementT * e, ElementT * (* make) ( void ) ) {
         dq->last = c;
     }
 
-    dequeUnlock ( dq );
+    unlockDeque ( dq );
 }
 
 ElementT * popHead ( DequeT * dq ) {
     ElementT * e = NULL;
-    dequeLock ( dq );
+    lockDeque ( dq );
 
     if ( dq->head != NULL ) {
         e = dq->head->element;
@@ -90,13 +90,13 @@ ElementT * popHead ( DequeT * dq ) {
         free ( tmp );
     }
 
-    dequeUnlock ( dq );
+    unlockDeque ( dq );
     return e;
 }
 
 ElementT * popLast ( DequeT * dq ) {
     ElementT * e = NULL;
-    dequeLock ( dq );
+    lockDeque ( dq );
 
     if ( dq->last != NULL ) {
         e = dq->last->element;
@@ -107,12 +107,12 @@ ElementT * popLast ( DequeT * dq ) {
         free ( tmp );
     }
 
-    dequeUnlock ( dq );
+    unlockDeque ( dq );
     return e;
 }
 
 void iterateWith ( DequeT * dq, void ( * f ) ( ElementT * ) ) {
-    dequeLock ( dq );
+    lockDeque ( dq );
 
     ContainerT * c = dq->head;
     while ( c != NULL ) {
@@ -120,11 +120,11 @@ void iterateWith ( DequeT * dq, void ( * f ) ( ElementT * ) ) {
         c = c->next;
     }
 
-    dequeUnlock ( dq );
+    unlockDeque ( dq );
 }
 
 void reverseIterateWith ( DequeT * dq, void ( * f ) ( ElementT * ) ) {
-    dequeLock ( dq );
+    lockDeque ( dq );
 
     ContainerT * c = dq->last;
     while ( c != NULL ) {
@@ -132,5 +132,5 @@ void reverseIterateWith ( DequeT * dq, void ( * f ) ( ElementT * ) ) {
         c = c->prev;
     }
 
-    dequeUnlock ( dq );
+    unlockDeque ( dq );
 }
