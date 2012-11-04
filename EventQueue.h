@@ -1,6 +1,8 @@
 #ifndef __EVENTQUEUE_H
 #define __EVENTQUEUE_H
 
+#include <pthread.h>
+
 #include "Deque.h"
 
 typedef struct EventT
@@ -10,7 +12,9 @@ typedef struct EventT
     } EventT;
 
 typedef struct EventQueueT
-    { DequeT * eventqueue
+    { pthread_cond_t wait
+    ; pthread_mutex_t lock
+    ; DequeT * eventqueue
     ; unsigned int dynamic
     ;
     } EventQueueT;

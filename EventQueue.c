@@ -10,21 +10,32 @@ EventQueueT * makeEventQueue ( EventQueueT * eq ) {
         eq->dynamic = 0;
     }
 
+    eq->eventqueue = makeDeque ( NULL );
+
+    pthread_cond_init ( &(eq->wait), NULL );
+    pthread_mutex_init ( &(eq->lock), NULL );
+    pthread_mutex_lock ( &(eq->lock) );
+
     return eq;
 }
 
 void destroyEventQueue ( EventQueueT * eq ) {
     destroyDeque ( eq->eventqueue, NULL );
+    pthread_cond_destroy ( &(eq->wait) );
+    pthread_mutex_destroy ( &(eq->lock) );
     if ( eq->dynamic ) free ( eq );
 }
 
 void addEvent ( EventQueueT * eq, EventT * e ) {
     pushLast ( eq->eventqueue, e, NULL );
+    pthread_cond_signal ( &eq->wait );
 }
 
 void runEventQueue ( EventQueueT * eq ) {
-    while ( ! isEmpty ( eq->eventqueue ) ) {
-        EventT * e = popHead ( eq->eventqueue );
-        e->callback ( e->data );
+    while ( 0 == pthread_cond_wait ( &(eq->wait), &(eq->lock) ) ) {
+        while ( ! isEmpty ( eq->eventqueue ) ) {
+            EventT * e = popHead ( eq->eventqueue );
+            e->callback ( e->data );
+        }
     }
 }
