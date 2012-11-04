@@ -1,5 +1,5 @@
-#ifndef __CONNECTOR_H
-#define __CONNECTOR_H
+#ifndef __HASHMAP_H
+#define __HASHMAP_H
 
 #include <sys/types.h>
 
