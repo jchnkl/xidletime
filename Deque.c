@@ -42,7 +42,8 @@ int isEmpty ( DequeT * dq ) {
 }
 
 void pushHead ( DequeT * dq, ElementT * e, ElementT * (* make) ( void ) ) {
-    ContainerT * c = (ContainerT *) calloc ( 1, sizeof ( ContainerT ) );
+    DequeContainerT * c =
+        (DequeContainerT *) calloc ( 1, sizeof ( DequeContainerT ) );
     if ( e == NULL && make != NULL ) e = make();
     c->element = e;
 
@@ -60,7 +61,8 @@ void pushHead ( DequeT * dq, ElementT * e, ElementT * (* make) ( void ) ) {
 }
 
 void pushLast ( DequeT * dq, ElementT * e, ElementT * (* make) ( void ) ) {
-    ContainerT * c = (ContainerT *) calloc ( 1, sizeof ( ContainerT ) );
+    DequeContainerT * c =
+        (DequeContainerT *) calloc ( 1, sizeof ( DequeContainerT ) );
     if ( e == NULL && make != NULL ) e = make();
     c->element = e;
 
@@ -83,7 +85,7 @@ ElementT * popHead ( DequeT * dq ) {
 
     if ( dq->head != NULL ) {
         e = dq->head->element;
-        ContainerT * tmp = dq->head;
+        DequeContainerT * tmp = dq->head;
         dq->head = dq->head->next;
         if ( dq->head != NULL ) dq->head->prev = NULL;
         if ( dq->last == tmp ) dq->last = dq->head;
@@ -100,7 +102,7 @@ ElementT * popLast ( DequeT * dq ) {
 
     if ( dq->last != NULL ) {
         e = dq->last->element;
-        ContainerT * tmp = dq->last;
+        DequeContainerT * tmp = dq->last;
         dq->last = dq->last->prev;
         if ( dq->last != NULL ) dq->last->next = NULL;
         if ( dq->head == tmp ) dq->head = dq->last;
@@ -111,10 +113,10 @@ ElementT * popLast ( DequeT * dq ) {
     return e;
 }
 
-void iterateWith ( DequeT * dq, void ( * f ) ( ElementT * ) ) {
+void iterateDequeWith ( DequeT * dq, void ( * f ) ( ElementT * ) ) {
     lockDeque ( dq );
 
-    ContainerT * c = dq->head;
+    DequeContainerT * c = dq->head;
     while ( c != NULL ) {
         f ( c->element );
         c = c->next;
@@ -123,10 +125,10 @@ void iterateWith ( DequeT * dq, void ( * f ) ( ElementT * ) ) {
     unlockDeque ( dq );
 }
 
-void reverseIterateWith ( DequeT * dq, void ( * f ) ( ElementT * ) ) {
+void reverseIterateDequeWith ( DequeT * dq, void ( * f ) ( ElementT * ) ) {
     lockDeque ( dq );
 
-    ContainerT * c = dq->last;
+    DequeContainerT * c = dq->last;
     while ( c != NULL ) {
         f ( c->element );
         c = c->prev;

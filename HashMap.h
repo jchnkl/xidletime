@@ -9,11 +9,11 @@ typedef unsigned int HashValueT;
 
 typedef void ElementT;
 
-typedef struct ContainerT
+typedef struct HashMapContainerT
     { KeyT key
     ; ElementT * element
     ;
-    } ContainerT;
+    } HashMapContainerT;
 
 typedef struct HashMapT HashMapT;
 
@@ -25,7 +25,7 @@ struct HashMapT
     ; unsigned int dynamic
     ; pthread_mutex_t hashlock
     ; HashFunT hashfun
-    ; ContainerT * container
+    ; HashMapContainerT * container
     ;
     };
 
@@ -39,8 +39,8 @@ ElementT * lookup ( HashMapT *, KeyT );
 
 ElementT * delete ( HashMapT *, KeyT, void ( * ) (ElementT *) );
 
-void iterateWith ( HashMapT *, void ( * ) ( ElementT * ) );
+void iterateHashMapWith ( HashMapT *, void ( * ) ( ElementT * ) );
 
-void reverseIterateWith ( HashMapT *, void ( * ) ( ElementT * ) );
+void reverseIterateHashMapWith ( HashMapT *, void ( * ) ( ElementT * ) );
 
 #endif

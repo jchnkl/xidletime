@@ -21,10 +21,10 @@ static void resize ( HashMapT * hm ) {
     lockHashMap ( hm );
 
     size_t oldsize = hm->size;
-    ContainerT * oldcontainer = hm->container;
+    HashMapContainerT * oldcontainer = hm->container;
 
     hm->size = hm->size + hm->size * hm->resize;
-    hm->container = calloc ( hm->size, sizeof ( ContainerT ) );
+    hm->container = calloc ( hm->size, sizeof ( HashMapContainerT ) );
 
     HashValueT hashvalue;
     for ( i = 0; i < oldsize; ++i ) {
@@ -57,7 +57,8 @@ HashMapT * makeHashMap ( HashMapT * hm, size_t size, HashFunT hashfun ) {
     hm->resize = 0.5;
 
     pthread_mutex_init ( &(hm->hashlock), NULL );
-    hm->container = (ContainerT *) calloc ( size, sizeof ( ContainerT ) );
+    hm->container =
+        (HashMapContainerT *) calloc ( size, sizeof ( HashMapContainerT ) );
 
     return hm;
 }
@@ -123,7 +124,7 @@ ElementT * delete ( HashMapT * hm, KeyT key, void (* destroy) (ElementT *) ) {
     return e;
 }
 
-void iterateWith ( HashMapT * hm, void ( * f ) ( ElementT * ) ) {
+void iterateHashMapWith ( HashMapT * hm, void ( * f ) ( ElementT * ) ) {
     int i;
     lockHashMap ( hm );
 
@@ -136,7 +137,7 @@ void iterateWith ( HashMapT * hm, void ( * f ) ( ElementT * ) ) {
     unlockHashMap ( hm );
 }
 
-void reverseIterateWith ( HashMapT * hm, void ( * f ) ( ElementT * ) ) {
+void reverseIterateHashMapWith ( HashMapT * hm, void ( * f ) ( ElementT * ) ) {
     int i;
     lockHashMap ( hm );
 

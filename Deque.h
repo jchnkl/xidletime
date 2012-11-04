@@ -5,16 +5,16 @@
 
 typedef void ElementT;
 
-typedef struct ContainerT
+typedef struct DequeContainerT
     {        ElementT   * element
-    ; struct ContainerT * next
-    ; struct ContainerT * prev
+    ; struct DequeContainerT * next
+    ; struct DequeContainerT * prev
     ;
-    } ContainerT;
+    } DequeContainerT;
 
 typedef struct DequeT
-    { ContainerT      * head
-    ; ContainerT      * last
+    { DequeContainerT      * head
+    ; DequeContainerT      * last
     ; pthread_mutex_t   dequelock
     ; unsigned int      dynamic
     ;
@@ -34,8 +34,8 @@ ElementT * popHead ( DequeT * );
 
 ElementT * popLast ( DequeT * );
 
-void iterateWith ( DequeT *, void ( * ) ( ElementT * ) );
+void iterateDequeWith ( DequeT *, void ( * ) ( ElementT * ) );
 
-void reverseIterateWith ( DequeT *, void ( * ) ( ElementT * ) );
+void reverseIterateDequeWith ( DequeT *, void ( * ) ( ElementT * ) );
 
 #endif
