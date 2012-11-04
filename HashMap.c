@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-static KeyT naiveHashFun ( HashMapT * hm, ElementT * e ) {
-    return ( (unsigned long)e % hm->size );
+static HashValueT naiveHashFun ( HashMapT * hm, KeyT key ) {
+    return key % hm->size;
 }
 
 static void lockHashMap ( HashMapT * hm ) {
@@ -26,12 +26,12 @@ static void resize ( HashMapT * hm ) {
     hm->size = hm->size + hm->size * hm->resize;
     hm->container = calloc ( hm->size, sizeof ( ContainerT ) );
 
-    KeyT key;
+    HashValueT hashvalue;
     for ( i = 0; i < oldsize; ++i ) {
         if ( oldcontainer[i].element != NULL ) {
-            key = hm->hashfun ( hm, oldcontainer[i].element );
-            hm->container[key].key = key;
-            hm->container[key].element = oldcontainer[i].element;
+            hashvalue = hm->hashfun ( hm, oldcontainer[i].key );
+            hm->container[hashvalue].key = oldcontainer[i].key;
+            hm->container[hashvalue].element = oldcontainer[i].element;
         }
     }
 
@@ -73,22 +73,20 @@ void destroyHashMap ( HashMapT * hm, void (* destroy) (ElementT *) ) {
     free ( hm->container );
 }
 
-KeyT insert ( HashMapT * hm, ElementT * e ) {
+void insert ( HashMapT * hm, KeyT key, ElementT * e ) {
     lockHashMap ( hm );
-    KeyT key = hm->hashfun ( hm, e );
+    HashValueT hashvalue = hm->hashfun ( hm, key );
 
-    if ( hm->container[key].element == NULL ) {
-        hm->container[key].element = e;
+    if ( hm->container[hashvalue].element == NULL ) {
+        hm->container[hashvalue].element = e;
         unlockHashMap ( hm );
     } else {
         unlockHashMap ( hm );
         resize ( hm );
-        key = insert ( hm, e );
+        insert ( hm, key, e );
     }
 
-    hm->container[key].key = key;
-
-    return key;
+    hm->container[hashvalue].key = key;
 }
 
 ElementT * lookup ( HashMapT * hm, KeyT key ) {

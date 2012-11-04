@@ -5,6 +5,8 @@
 
 typedef unsigned int KeyT;
 
+typedef unsigned int HashValueT;
+
 typedef void ElementT;
 
 typedef struct ContainerT
@@ -15,7 +17,7 @@ typedef struct ContainerT
 
 typedef struct HashMapT HashMapT;
 
-typedef KeyT (* HashFunT) ( HashMapT *, ElementT * );
+typedef HashValueT (* HashFunT) ( HashMapT *, KeyT );
 
 struct HashMapT
     { size_t size
@@ -31,7 +33,7 @@ HashMapT * makeHashMap ( HashMapT *, size_t, HashFunT );
 
 void destroyHashMap ( HashMapT *, void ( * ) (ElementT *) );
 
-KeyT insert ( HashMapT *, ElementT * );
+void insert ( HashMapT *, KeyT, ElementT * );
 
 ElementT * lookup ( HashMapT *, KeyT );
 

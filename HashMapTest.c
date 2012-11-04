@@ -10,28 +10,17 @@ int main ( int argc, char ** argv ) {
 
     HashMapT * hm = makeHashMap ( NULL, 10, NULL /* , myHash */ );
 
-    KeyT key;
     for ( i = 0; i < 20; ++i ) {
         int * j = (int *) malloc ( sizeof ( int ) );
         *j = i;
-        if ( i == 10 ) {
-            key = insert ( hm, j );
-            fprintf ( stderr
-                    , "inserting %i, got key: %u\n"
-                    , i
-                    , key
-                    );
-        } else {
-            fprintf ( stderr
-                    , "inserting %i, got key: %u\n"
-                    , i
-                    , insert ( hm, j )
-                    );
-        }
+        insert ( hm, i, j );
+        fprintf ( stderr , "inserting %i with key: %i\n", i, *j );
     }
 
-    // delete ( hm, 7, free );
-    delete ( hm, key, free );
+    delete ( hm, 3, free );
+    delete ( hm, 7, free );
+    delete ( hm, 13, free );
+    delete ( hm, 17, free );
 
     void printInt ( ElementT * e ) { fprintf ( stderr, "%i ", *(int *)e ); }
     fprintf ( stderr, "iterating forward\n" );
