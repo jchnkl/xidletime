@@ -85,17 +85,17 @@ WireTableT * makeWireTable ( WireTableConfigT * wtc, SourceSinkTableT * sst ) {
         if ( wtc[i].conns == 0 ) {
             insert ( wt, wtc[i].id, NULL );
         } else {
-            SinkListT * sl  = makeDeque ( NULL );
+            DequeT * sinklist  = makeDeque ( NULL );
             for ( j = 0; j < wtc[i].conns; ++j ) {
                 for ( k = 0; k < sst->numSinks; ++k ) {
                     // TODO use HashMapT instead of array for sst->sinks
                     if ( sst->sinks[k].id == wtc[i].ids[j] ) {
-                        pushHead ( sl, &(sst->sinks[k]), NULL );
+                        pushHead ( sinklist, &(sst->sinks[k]), NULL );
                         break;
                     }
                 }
             }
-            insert ( wt, wtc[i].id, sl );
+            insert ( wt, wtc[i].id, sinklist );
         }
     }
 
