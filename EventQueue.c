@@ -116,11 +116,25 @@ void startEventSources ( SourceSinkTableT * sst ) {
 
 }
 
-void runEventQueue ( EventQueueT * eq ) {
+void runEventQueue
+    ( EventQueueT      * eq
+    , SourceSinkTableT * sst
+    , WireTableT       * wt
+    ) {
     while ( 0 == pthread_cond_wait ( &(eq->wait), &(eq->lock) ) ) {
         while ( ! isEmpty ( eq->eventqueue ) ) {
-            EventT * e = popHead ( eq->eventqueue );
-            e->callback ( e->data );
+            // EventT * e = popHead ( eq->eventqueue );
+            // void * data = eventCallback();
+            EventSourceT * es = popHead ( eq->eventqueue );
+
+            DequeT * sinklist = lookup ( wt, es->id );
+            if ( sinklist != NULL ) {
+                void cb ( EventSinkT * snk ) {
+                    snk->callback ( snk, es );
+                }
+                iterateDequeWith ( sinklist, (void (*) (ElementT *))cb );
+            }
+
         }
     }
 }

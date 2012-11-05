@@ -48,8 +48,6 @@ void destroyEventQueue ( EventQueueT * );
 
 void queueEvent ( EventQueueT *, EventSourceT * );
 
-void runEventQueue ( EventQueueT * );
-
 SourceSinkTableT * makeSourceSinkTable
     ( SourceSinkTableT   *
     , EventQueueT        *
@@ -61,5 +59,7 @@ SourceSinkTableT * makeSourceSinkTable
 WireTableT * makeWireTable ( WireTableConfigT *, SourceSinkTableT * );
 
 void startEventSources ( SourceSinkTableT * );
+
+void runEventQueue ( EventQueueT *, SourceSinkTableT *, WireTableT * );
 
 #endif
