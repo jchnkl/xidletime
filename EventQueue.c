@@ -55,23 +55,27 @@ SourceSinkTableT * makeSourceSinkTable
     sst->numSources = numsrcs;
     sst->numSinks   = numsnks;
 
-    sst->sources = (EventSourceT *) calloc ( numsrcs, sizeof ( EventSourceT ) );
-    sst->sinks = (EventSinkT *) calloc ( numsnks, sizeof ( EventSinkT ) );
+    sst->eventSources = makeHashMap ( NULL, numsrcs, NULL );
+    sst->eventSinks   = makeHashMap ( NULL, numsnks, NULL );
 
     for ( i = 0; i < numsrcs; ++i ) {
-        sst->sources[i].id = srccfg[i].id;
-        sst->sources[i].eq = eq;
-        sst->sources[i].public = public;
-        sst->sources[i].private = srccfg[i].private;
-        sst->sources[i].er = srccfg[i].er;
-        sst->sources[i].ec = srccfg[i].ec;
+        EventSourceT * es = calloc ( 1, sizeof ( EventSourceT ) );
+        es->id      = srccfg[i].id;
+        es->eq      = eq;
+        es->public  = public;
+        es->private = srccfg[i].private;
+        es->er      = srccfg[i].er;
+        es->ec      = srccfg[i].ec;
+        insert ( sst->eventSources, es->id, es );
     }
 
     for ( i = 0; i < numsrcs; ++i ) {
-        sst->sinks[i].id = snkcfg[i].id;
-        sst->sinks[i].public = public;
-        sst->sinks[i].private = snkcfg[i].private;
-        sst->sinks[i].callback = snkcfg[i].callback;
+        EventSinkT * es = calloc ( 1, sizeof ( EventSinkT ) );
+        es->id       = snkcfg[i].id;
+        es->public   = public;
+        es->private  = snkcfg[i].private;
+        es->callback = snkcfg[i].callback;
+        insert ( sst->eventSinks, es->id, es );
     }
 
     return sst;
@@ -84,7 +88,7 @@ void destroySourceSinkTable ( SourceSinkTableT * sst ) {
 }
 
 WireTableT * makeWireTable ( WireTableConfigT * wtc, SourceSinkTableT * sst ) {
-    int i = 0, j = 0, k = 0, wtsize = -1;
+    int i = 0, j = 0, wtsize = -1;
 
     while ( wtc[++wtsize].conns != -1 );
 
@@ -94,15 +98,12 @@ WireTableT * makeWireTable ( WireTableConfigT * wtc, SourceSinkTableT * sst ) {
         if ( wtc[i].conns == 0 ) {
             insert ( wt, wtc[i].id, NULL );
         } else {
-            DequeT * sinklist  = makeDeque ( NULL );
+            DequeT * sinklist = makeDeque ( NULL );
             for ( j = 0; j < wtc[i].conns; ++j ) {
-                for ( k = 0; k < sst->numSinks; ++k ) {
-                    // TODO use HashMapT instead of array for sst->sinks
-                    if ( sst->sinks[k].id == wtc[i].ids[j] ) {
-                        pushHead ( sinklist, &(sst->sinks[k]), NULL );
-                        break;
-                    }
-                }
+                pushHead ( sinklist
+                         , lookup ( sst->eventSinks, wtc[i].ids[j] )
+                         , NULL
+                         );
             }
             insert ( wt, wtc[i].id, sinklist );
         }
@@ -112,34 +113,26 @@ WireTableT * makeWireTable ( WireTableConfigT * wtc, SourceSinkTableT * sst ) {
 }
 
 void startEventSources ( SourceSinkTableT * sst ) {
-    int i = 0;
     pthread_t tid;
 
-    for ( i = 0; i < sst->numSources; ++i ) {
-        pthread_create ( &tid
-                       , NULL
-                       , ( void * (*) (void *) )sst->sources[i].er
-                       , &(sst->sources[i]) );
+    void start_thread ( EventSourceT * es ) {
+        pthread_create ( &tid, NULL, (void * (*) (void *))es->er, es );
     }
 
+    iterateHashMapWith ( sst->eventSources, (void (*) (void *))start_thread );
 }
 
 void runEventQueue
-    ( EventQueueT      * eq
-    , SourceSinkTableT * sst
-    , WireTableT       * wt
+    ( EventQueueT * eq
+    , WireTableT  * wt
     ) {
     while ( 0 == pthread_cond_wait ( &(eq->wait), &(eq->lock) ) ) {
         while ( ! isEmpty ( eq->eventqueue ) ) {
-            // EventT * e = popHead ( eq->eventqueue );
-            // void * data = eventCallback();
             EventSourceT * es = popHead ( eq->eventqueue );
 
             DequeT * sinklist = lookup ( wt, es->id );
             if ( sinklist != NULL ) {
-                void cb ( EventSinkT * snk ) {
-                    snk->callback ( snk, es );
-                }
+                void cb ( EventSinkT * snk ) { snk->callback ( snk, es ); }
                 iterateDequeWith ( sinklist, (void (*) (ElementT *))cb );
             }
 

@@ -40,9 +40,9 @@ typedef struct EventSinkT
 typedef struct SourceSinkTableT
     { unsigned int   dynamic
     ; unsigned int   numSources;
-    ; EventSourceT * sources;
+    ; HashMapT     * eventSources;
     ; unsigned int   numSinks;
-    ; EventSinkT   * sinks;
+    ; HashMapT     * eventSinks;
     ;
     } SourceSinkTableT;
 
@@ -66,6 +66,6 @@ WireTableT * makeWireTable ( WireTableConfigT *, SourceSinkTableT * );
 
 void startEventSources ( SourceSinkTableT * );
 
-void runEventQueue ( EventQueueT *, SourceSinkTableT *, WireTableT * );
+void runEventQueue ( EventQueueT *, WireTableT * );
 
 #endif
