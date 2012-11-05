@@ -5,12 +5,6 @@
 
 #include "Deque.h"
 
-typedef struct EventT
-    { void * data
-    ; void ( * callback ) ( void * )
-    ;
-    } EventT;
-
 typedef HashMapT WireTableT;
 
 typedef struct EventQueueT
