@@ -75,6 +75,34 @@ SourceSinkTableT * makeSourceSinkTable
     return sst;
 }
 
+WireTableT * makeWireTable ( WireTableConfigT * wtc, SourceSinkTableT * sst ) {
+    int i = 0, j = 0, k = 0, wtsize = -1;
+
+    while ( wtc[++wtsize].conns != -1 );
+
+    WireTableT * wt = makeHashMap ( NULL, wtsize, NULL );
+
+    for ( i = 0; i < wtsize; ++i ) {
+        if ( wtc[i].conns == 0 ) {
+            insert ( wt, wtc[i].id, NULL );
+        } else {
+            SinkListT * sl  = makeDeque ( NULL );
+            for ( j = 0; j < wtc[i].conns; ++j ) {
+                for ( k = 0; k < sst->numSinks; ++k ) {
+                    // TODO use HashMapT instead of array for sst->sinks
+                    if ( sst->sinks[k].id == wtc[i].ids[j] ) {
+                        pushHead ( sl, &(sst->sinks[k]), NULL );
+                        break;
+                    }
+                }
+            }
+            insert ( wt, wtc[i].id, sl );
+        }
+    }
+
+    return wt;
+}
+
 void runEventQueue ( EventQueueT * eq ) {
     while ( 0 == pthread_cond_wait ( &(eq->wait), &(eq->lock) ) ) {
         while ( ! isEmpty ( eq->eventqueue ) ) {

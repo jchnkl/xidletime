@@ -11,6 +11,8 @@ typedef struct EventT
     ;
     } EventT;
 
+typedef HashMapT WireTableT;
+
 typedef struct EventQueueT
     { pthread_cond_t wait
     ; pthread_mutex_t lock
@@ -62,5 +64,6 @@ SourceSinkTableT * makeSourceSinkTable
     , EventSinkConfigT   *
     );
 
+WireTableT * makeWireTable ( WireTableConfigT *, SourceSinkTableT * );
 
 #endif
