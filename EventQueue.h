@@ -54,4 +54,13 @@ void queueEvent ( EventQueueT *, EventSourceT * );
 
 void runEventQueue ( EventQueueT * );
 
+SourceSinkTableT * makeSourceSinkTable
+    ( SourceSinkTableT   *
+    , EventQueueT        *
+    , PublicConfig       *
+    , EventSourceConfigT *
+    , EventSinkConfigT   *
+    );
+
+
 #endif
