@@ -8,10 +8,10 @@
 typedef HashMapT WireTableT;
 
 typedef struct EventQueueT
-    { pthread_cond_t wait
+    { unsigned int dynamic
+    ; pthread_cond_t wait
     ; pthread_mutex_t lock
     ; DequeT * eventqueue
-    ; unsigned int dynamic
     ; void (* queueEvent) ( struct EventQueueT *, EventSourceT * )
     ;
     } EventQueueT;

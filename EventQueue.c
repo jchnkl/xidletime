@@ -10,12 +10,11 @@ EventQueueT * makeEventQueue ( EventQueueT * eq ) {
         eq->dynamic = 0;
     }
 
-    eq->eventqueue = makeDeque ( NULL );
-
     pthread_cond_init ( &(eq->wait), NULL );
     pthread_mutex_init ( &(eq->lock), NULL );
     pthread_mutex_lock ( &(eq->lock) );
 
+    eq->eventqueue = makeDeque ( NULL );
     eq->queueEvent = queueEvent;
 
     return eq;
