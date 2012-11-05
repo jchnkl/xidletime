@@ -4,6 +4,9 @@
 #include <pthread.h>
 
 #include "Deque.h"
+#include "HashMap.h"
+#include "CommonTypes.h"
+#include "Plugins/PluginConfig.h"
 
 typedef HashMapT WireTableT;
 
