@@ -103,6 +103,19 @@ WireTableT * makeWireTable ( WireTableConfigT * wtc, SourceSinkTableT * sst ) {
     return wt;
 }
 
+void startEventSources ( SourceSinkTableT * sst ) {
+    int i = 0;
+    pthread_t tid;
+
+    for ( i = 0; i < sst->numSources; ++i ) {
+        pthread_create ( &tid
+                       , NULL
+                       , ( void * (*) (void *) )sst->sources[i].er
+                       , &(sst->sources[i]) );
+    }
+
+}
+
 void runEventQueue ( EventQueueT * eq ) {
     while ( 0 == pthread_cond_wait ( &(eq->wait), &(eq->lock) ) ) {
         while ( ! isEmpty ( eq->eventqueue ) ) {

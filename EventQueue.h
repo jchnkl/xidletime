@@ -60,4 +60,6 @@ SourceSinkTableT * makeSourceSinkTable
 
 WireTableT * makeWireTable ( WireTableConfigT *, SourceSinkTableT * );
 
+void startEventSources ( SourceSinkTableT * );
+
 #endif
