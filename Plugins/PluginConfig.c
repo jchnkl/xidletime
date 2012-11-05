@@ -13,6 +13,6 @@ const EventSinkConfigT sinkConfig[] =
     };
 
 const WireTableConfigT wireTable[] =
-    { {  0, 0, {  0 } }
-    , { -1, 0, {}     }
+    { {  1, 0, { 0 } }
+    , { -1, 0, {}    }
     };
