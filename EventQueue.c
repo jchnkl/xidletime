@@ -44,6 +44,9 @@ SourceSinkTableT * makeSourceSinkTable
 
     if ( sst == NULL ) {
         sst = (SourceSinkTableT *) calloc ( 1, sizeof ( SourceSinkTableT ) );
+        sst->dynamic = 1;
+    } else {
+        sst->dynamic = 0;
     }
 
     while ( srccfg[++numsrcs].id != -1 );
@@ -72,6 +75,12 @@ SourceSinkTableT * makeSourceSinkTable
     }
 
     return sst;
+}
+
+void destroySourceSinkTable ( SourceSinkTableT * sst ) {
+    destroyHashMap ( sst->eventSources, free );
+    destroyHashMap ( sst->eventSinks, free );
+    if ( sst->dynamic == 1 ) free ( sst );
 }
 
 WireTableT * makeWireTable ( WireTableConfigT * wtc, SourceSinkTableT * sst ) {

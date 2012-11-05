@@ -38,7 +38,8 @@ typedef struct EventSinkT
     } EventSinkT;
 
 typedef struct SourceSinkTableT
-    { unsigned int   numSources;
+    { unsigned int   dynamic
+    ; unsigned int   numSources;
     ; EventSourceT * sources;
     ; unsigned int   numSinks;
     ; EventSinkT   * sinks;
@@ -58,6 +59,8 @@ SourceSinkTableT * makeSourceSinkTable
     , EventSourceConfigT *
     , EventSinkConfigT   *
     );
+
+void destroySourceSinkTable ( SourceSinkTableT * );
 
 WireTableT * makeWireTable ( WireTableConfigT *, SourceSinkTableT * );
 
