@@ -16,6 +16,8 @@ EventQueueT * makeEventQueue ( EventQueueT * eq ) {
     pthread_mutex_init ( &(eq->lock), NULL );
     pthread_mutex_lock ( &(eq->lock) );
 
+    eq->queueEvent = queueEvent;
+
     return eq;
 }
 

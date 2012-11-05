@@ -16,6 +16,7 @@ typedef struct EventQueueT
     ; pthread_mutex_t lock
     ; DequeT * eventqueue
     ; unsigned int dynamic
+    ; void (* queueEvent) ( struct EventQueueT *, EventSourceT * )
     ;
     } EventQueueT;
 
@@ -23,7 +24,7 @@ EventQueueT * makeEventQueue ( EventQueueT * );
 
 void destroyEventQueue ( EventQueueT * );
 
-void addEvent ( EventQueueT *, EventT * );
+void queueEvent ( EventQueueT *, EventSourceT * );
 
 void runEventQueue ( EventQueueT * );
 
