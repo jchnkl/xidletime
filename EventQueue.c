@@ -27,8 +27,8 @@ void destroyEventQueue ( EventQueueT * eq ) {
     if ( eq->dynamic ) free ( eq );
 }
 
-void addEvent ( EventQueueT * eq, EventT * e ) {
-    pushLast ( eq->eventqueue, e, NULL );
+void queueEvent ( EventQueueT * eq, EventSourceT * es ) {
+    pushLast ( eq->eventqueue, es, NULL );
     pthread_cond_signal ( &eq->wait );
 }
 
