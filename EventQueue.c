@@ -69,7 +69,7 @@ SourceSinkTableT * makeSourceSinkTable
         insert ( sst->eventSources, es->id, es );
     }
 
-    for ( i = 0; i < numsrcs; ++i ) {
+    for ( i = 0; i < numsnks; ++i ) {
         EventSinkT * es = calloc ( 1, sizeof ( EventSinkT ) );
         es->id       = snkcfg[i].id;
         es->public   = public;
