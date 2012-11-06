@@ -3,74 +3,82 @@
 #include <stdio.h>
 #include <string.h>
 
-static void initXTimer ( XTimerT * xtimer ) {
-    if ( xtimer->dpy == NULL ) xtimer->dpy = XOpenDisplay ("");
-    XSetScreenSaver ( xtimer->dpy, xtimer->idletime / 1000, 0, False, False );
-}
+static XTimerT staticXTimer;
+static XTimerCallbackT staticXTCB;
 
-static void runXTimer ( XTimerT * xtimer, XTimerCallbackT * xtcallback ) {
-
+static void runXTimer ( void ) {
     int xssEvBase, xssErrBase;
 
     XEvent xEvent;
     XScreenSaverNotifyEvent * xssEvent = (XScreenSaverNotifyEvent *) &xEvent;
 
-    Window root = DefaultRootWindow ( xtimer->dpy );
+    Window root = DefaultRootWindow ( staticXTimer.dpy );
 
-    XScreenSaverQueryExtension ( xtimer->dpy, &xssEvBase, &xssErrBase );
-    XScreenSaverSelectInput ( xtimer->dpy, root, ScreenSaverNotifyMask );
-
-    xtcallback->xtimer = xtimer;
+    XScreenSaverQueryExtension ( staticXTimer.dpy, &xssEvBase, &xssErrBase );
+    XScreenSaverSelectInput ( staticXTimer.dpy, root, ScreenSaverNotifyMask );
 
     while ( 1 ) {
-        XNextEvent ( xtimer->dpy, &xEvent );
+        XNextEvent ( staticXTimer.dpy, &xEvent );
         if ( xEvent.type != xssEvBase + ScreenSaverNotify ) continue;
 
 
         if ( xssEvent->state == ScreenSaverOn ) {
-            xtcallback->status = Idle;
-            xtcallback->run ( xtcallback );
+            staticXTCB.status = Idle;
         } else {
-            xtcallback->status = Reset;
-            xtcallback->run ( xtcallback );
+            staticXTCB.status = Reset;
         }
 
+        staticXTCB.run ( &staticXTCB );
     }
 }
 
-uint getXIdleTime ( XTimerT * xtimer ) {
-    return xtimer->idletime;
+uint getXIdleTime ( void ) {
+    return staticXTimer.idletime;
 }
 
-int setXIdleTime ( XTimerT * xtimer, uint idletime ) {
-    if ( xtimer == NULL ) return -1;
-    xtimer->idletime = idletime;
-    XSetScreenSaver ( xtimer->dpy, xtimer->idletime / 1000, 0, False, False );
-    return 0;
+void setXIdleTime ( uint idletime ) {
+    staticXTimer.idletime = idletime;
+    XSetScreenSaver ( staticXTimer.dpy, staticXTimer.idletime / 1000, 0, False, False );
 }
 
-void * xIdleTimerSource ( EventSourceT * es ) {
-    XTimerT xtimer; memset ( &xtimer, 0, sizeof ( XTimerT ) );
-    XTimerCallbackT xtcb; memset ( &xtcb, 0, sizeof ( XTimerCallbackT ) );
+void * xIdleTimerSource ( EventSourceT * src ) {
+
+    if ( src->private == NULL ) {
+        memset ( &staticXTimer, 0, sizeof ( XTimerT ) );
+        memset ( &staticXTCB, 0, sizeof ( XTimerCallbackT ) );
+
+        void getConfig ( PublicConfigT * pc ) {
+            if ( pc->dpy == NULL ) pc->dpy = XOpenDisplay ("");
+            staticXTimer.dpy = pc->dpy;
+            staticXTimer.idletime = pc->options->idletime;
+        }
+        withPublicConfig ( src->public, getConfig );
+
+        XSetScreenSaver ( staticXTimer.dpy
+                        , staticXTimer.idletime / 1000
+                        , 0
+                        , False
+                        , False
+                        );
+
+        src->private = (void *)&staticXTCB;
+    }
+
+    staticXTCB.xtimer = &staticXTimer;
 
     void cb ( XTimerCallbackT * xtc ) {
-        es->private = (void *)xtc;
-        es->eq->queueEvent ( es->eq, es );
+        src->eq->queueEvent ( src->eq, src );
     }
 
-    xtcb.run = cb;
+    staticXTCB.run = cb;
 
-    xtimer.idletime = 7000;
-
-    initXTimer ( &xtimer );
-
-    runXTimer ( &xtimer, &xtcb );
+    runXTimer();
 
     return NULL;
 }
 
 void xIdleTimerSink ( EventSinkT * snk, EventSourceT * src ) {
-    if ( ((XTimerCallbackT *)src->private)->status == Idle ) {
+    if ( staticXTCB.status == Idle ) {
         fprintf ( stdout, "Idle\n" );
     } else {
         fprintf ( stdout, "Reset\n" );

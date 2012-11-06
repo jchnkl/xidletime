@@ -22,9 +22,9 @@ typedef struct XTimerCallbackT
     ;
     } XTimerCallbackT;
 
-uint getXIdleTime ( XTimerT * xtimer );
+uint getXIdleTime ( void );
 
-int setXIdleTime ( XTimerT * xtimer, uint idletime );
+void setXIdleTime ( uint idletime );
 
 void * xIdleTimerSource ( EventSourceT * );
 
