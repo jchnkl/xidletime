@@ -8,11 +8,11 @@
 #include "GetOptions.h"
 
 typedef struct PublicConfigT
-    { pthread_spinlock_t   publiclock // don't touch this; use withPublicConfig;
-    ; unsigned int         dynamic    // makePublicConfig & destroyPublicConfig
-    ; Options            * options
-    ; Display            * dpy
-    ; DBusConnection     * dbusconn
+    { pthread_mutex_t   publiclock // don't touch this; use withPublicConfig;
+    ; unsigned int      dynamic    // makePublicConfig & destroyPublicConfig
+    ; Options         * options
+    ; Display         * dpy
+    ; DBusConnection  * dbusconn
     ;
     } PublicConfigT;
 
