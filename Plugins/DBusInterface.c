@@ -17,6 +17,8 @@ static void initDBus ( PublicConfigT * pc ) {
 
     dbus_error_init ( &err ); // initialise the errors
 
+    // for thread safe dbus api
+    dbus_threads_init_default();
 
     // connect to the bus
     staticDBusConfig.connection = dbus_bus_get ( DBUS_BUS_SESSION, &err );
