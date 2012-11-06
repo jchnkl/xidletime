@@ -14,14 +14,6 @@ typedef struct DBusConfig
     ;
     } DBusConfig;
 
-// int initDBus ( DBusConfig * dbusconfig );
-
-// void finalizeDBus ( DBusConfig * dbusconfig );
-
-// int dbusEmitSignal ( DBusConfig * dbusconfig );
-
-// int getSignalEmitter ( DBusConfig * dbusconfig, SignalEmitter * signalemitter );
-
 void dbusSendSignalSink ( EventSinkT *, EventSourceT * );
 
 #endif

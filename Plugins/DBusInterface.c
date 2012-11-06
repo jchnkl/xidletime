@@ -7,70 +7,57 @@ extern const char * busName;
 extern const char * objectPath;
 extern const char * interfaceName;
 
-static DBusConfig dbusconfig;
+static DBusConfig staticDBusConfig;
 
-static int initDBus ( DBusConfig * dbusconfig ) {
+static void initDBus ( PublicConfigT * pc ) {
+
+    if ( pc->dbusconn != NULL ) return;
 
     DBusError        err;
-    DBusConnection * conn;
 
     dbus_error_init ( &err ); // initialise the errors
 
-    if ( dbusconfig == NULL ) return -1;
-
-    if ( dbusconfig->busName == NULL
-      || dbusconfig->objectPath == NULL
-      || dbusconfig->interfaceName == NULL
-       ) return -1;
 
     // connect to the bus
-    conn = dbus_bus_get ( DBUS_BUS_SESSION, &err );
+    staticDBusConfig.connection = dbus_bus_get ( DBUS_BUS_SESSION, &err );
 
-    if ( dbus_error_is_set ( &err ) || conn == NULL ) return -1;
 
     // request a name on the bus
-    if ( dbus_bus_request_name ( conn
-                               , dbusconfig->busName
-                               , DBUS_NAME_FLAG_REPLACE_EXISTING
-                               , &err
-                               )
-         != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER
-      || dbus_error_is_set ( &err )
-       ) return -1;
 
-    dbusconfig->connection = conn;
+    dbus_bus_request_name ( staticDBusConfig.connection
+                          , pc->options->busName
+                          , DBUS_NAME_FLAG_REPLACE_EXISTING
+                          , &err
+                          );
 
-    return 0;
+    staticDBusConfig.busName = pc->options->busName;
+    staticDBusConfig.objectPath = pc->options->objectPath;
+    staticDBusConfig.interfaceName = pc->options->interfaceName;
+
 
 }
 
-static void finalizeDBus ( DBusConfig * dbusconfig ) {
-    if ( dbusconfig != NULL && dbusconfig->connection != NULL ) {
-        dbus_connection_unref ( dbusconfig->connection );
-    }
-}
-
-static int dbusEmitSignal ( DBusConfig * dbusconfig ) {
+static int dbusEmitSignal ( void ) {
 
     DBusMessage * msg;
     dbus_uint32_t serial = 0; // unique number to associate replies with requests
 
     // create a signal and check for errors
-    msg = dbus_message_new_signal ( dbusconfig->objectPath
-                                  , dbusconfig->interfaceName
-                                  , dbusconfig->signalName
+    msg = dbus_message_new_signal ( staticDBusConfig.objectPath
+                                  , staticDBusConfig.interfaceName
+                                  , staticDBusConfig.signalName
                                   );
 
     if ( msg == NULL ) return -1;
 
     // send the message and flush the connection
-    if ( ! dbus_connection_send ( dbusconfig->connection
+    if ( ! dbus_connection_send ( staticDBusConfig.connection
                                 , msg
                                 , &serial
                                 )
        ) return -1;
 
-    dbus_connection_flush ( dbusconfig->connection );
+    dbus_connection_flush ( staticDBusConfig.connection );
 
     dbus_message_unref ( msg );
     return 0;
@@ -79,34 +66,14 @@ static int dbusEmitSignal ( DBusConfig * dbusconfig ) {
 
 void dbusSendSignalSink ( EventSinkT * snk, EventSourceT * src ) {
     if ( snk->private == NULL ) {
-        dbusconfig.busName       = busName;
-        dbusconfig.objectPath    = objectPath;
-        dbusconfig.interfaceName = interfaceName;
-        initDBus ( &dbusconfig );
-        snk->private = (void *)&dbusconfig;
+        withPublicConfig ( snk->public, initDBus );
+        snk->private = (void *)&staticDBusConfig;
     }
 
     if ( src->id == 1 && Reset == ((XTimerCallbackT *)src->private)->status ) {
-        dbusconfig.signalName = "Reset";
+        staticDBusConfig.signalName = "Reset";
     } else {
-        dbusconfig.signalName = "Idle";
+        staticDBusConfig.signalName = "Idle";
     }
-    dbusEmitSignal ( &dbusconfig );
+    dbusEmitSignal();
 }
-
-/*
-static int _dbusEmitSignal ( SignalEmitter * se, char * name ) {
-    ((DBusConfig *)(se->data))->signalName = name;
-    dbusEmitSignal ( se->data );
-    return 0;
-}
-
-int getSignalEmitter ( DBusConfig * dbusconfig, SignalEmitter * signalemitter ) {
-    if ( dbusconfig == NULL ) return -1;
-
-    signalemitter->data = dbusconfig;
-    signalemitter->emitSignal = _dbusEmitSignal;
-
-    return 0;
-}
-*/
