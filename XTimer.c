@@ -3,7 +3,7 @@
 #include <string.h>
 
 void initXTimer ( XTimerT * xtimer ) {
-    xtimer->dpy = XOpenDisplay ("");
+    if ( xtimer->dpy == NULL ) xtimer->dpy = XOpenDisplay ("");
     XSetScreenSaver ( xtimer->dpy, xtimer->idletime / 1000, 0, False, False );
 }
 
