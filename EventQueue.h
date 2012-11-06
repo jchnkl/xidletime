@@ -64,6 +64,8 @@ void destroySourceSinkTable ( SourceSinkTableT * );
 
 WireTableT * makeWireTable ( WireTableConfigT *, SourceSinkTableT * );
 
+void destroyWireTable ( WireTableT * );
+
 void startEventSources ( SourceSinkTableT * );
 
 void runEventQueue ( EventQueueT *, WireTableT * );

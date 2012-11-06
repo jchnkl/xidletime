@@ -112,6 +112,13 @@ WireTableT * makeWireTable ( WireTableConfigT * wtc, SourceSinkTableT * sst ) {
     return wt;
 }
 
+void destroyWireTable ( WireTableT * wt ) {
+    void destroyList ( ElementT * e ) {
+        destroyDeque ( (DequeT *)e, NULL );
+    }
+    destroyHashMap ( wt, destroyList );
+}
+
 void startEventSources ( SourceSinkTableT * sst ) {
     pthread_t tid;
 
