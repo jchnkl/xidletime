@@ -8,13 +8,16 @@
 
 #include "KMeansCluster.h"
 
-typedef struct TimerCallbackT
+typedef struct ATConfigT
     { GroupsT        * groups
-    ; Options        * options
+    ; const char     * idlefile
+    ; const char     * timeoutfile
+    ; double           base
+    ; unsigned int     idletime
     ; struct timeval   lastTime
     ; int              class[2]
     ;
-    } TimerCallbackT;
+    } ATConfigT;
 
 void adaptiveTimeoutSink ( EventSinkT *, EventSourceT * );
 

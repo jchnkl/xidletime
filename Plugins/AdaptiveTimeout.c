@@ -11,33 +11,27 @@
 
 #include "XIdleTimer.h"
 
-static TimerCallbackT staticTimerCB;
+static ATConfigT staticATConfig;
 
-static TimerCallbackT * initAdaptiveTimeoutSink
-    ( EventSourceT   * src
-    , TimerCallbackT * timercb
-    ) {
-    timercb = &staticTimerCB;
-    memset ( timercb, 0, sizeof ( TimerCallbackT ) );
+static void initAdaptiveTimeoutSink ( PublicConfigT * pc ) {
+    memset ( &staticATConfig, 0, sizeof ( ATConfigT ) );
 
-    Options * options = calloc ( 1, sizeof ( Options ) );
     // getoptions ( &options, argc, argv );
-    options->base = 0.15; options->idletime = 7000;
-    options->idlefile = "/tmp/idlefile.dat";
-    options->timeoutfile = "/tmp/timeoutfile.dat";
-
-    timercb->options = options;
+    staticATConfig.base = pc->options->base;
+    staticATConfig.idletime = pc->options->idletime;
+    staticATConfig.idlefile = pc->options->idlefile;
+    staticATConfig.timeoutfile = pc->options->timeoutfile;
 
     const char * seed[2];
-    seed[0] = options->idlefile;
-    seed[1] = options->timeoutfile;
+    seed[0] = pc->options->idlefile;
+    seed[1] = pc->options->timeoutfile;
 
     // GroupT group[2];
     GroupT * group = calloc ( 2, sizeof ( GroupT ) );
     unsigned int size[] = { 100, 10 };
     CmpTypeT comp[] = { MEAN, FILL };
     int initMeans ( int m, int s ) {
-        return (int)((double)(options->idletime) * (double)m / (double)s);
+        return (int)((double)(pc->options->idletime) * (double)m / (double)s);
     }
 
     // GroupsT groups;
@@ -45,42 +39,37 @@ static TimerCallbackT * initAdaptiveTimeoutSink
     groups->ngroups = 2;
     groups->groups  = group;
     makeGroups ( initMeans, groups, size, comp, seed );
-    timercb->groups = groups;
+    staticATConfig.groups = groups;
 
-    timercb->class[0]  = size[0] - 1;
-    timercb->class[1]  = size[1] - 1;
-    gettimeofday ( &timercb->lastTime, NULL );
-
-    return timercb;
+    staticATConfig.class[0]  = size[0] - 1;
+    staticATConfig.class[1]  = size[1] - 1;
+    gettimeofday ( &(staticATConfig.lastTime), NULL );
 }
 
 void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
-    TimerCallbackT * timercb = (TimerCallbackT *) snk->private;
-    if ( timercb == NULL ) {
-        timercb = initAdaptiveTimeoutSink ( src, timercb );
-        snk->private = (void *)timercb;
+    if ( snk->private == NULL ) {
+        withPublicConfig ( snk->public, initAdaptiveTimeoutSink );
+        snk->private = (void *)&staticATConfig;
     }
 
-    Options       * options    = (Options       *) timercb->options;
-    GroupsT       * groups     = (GroupsT       *) timercb->groups;
+    GroupsT       * groups     = (GroupsT       *) staticATConfig.groups;
 
     XTimerCallbackT * xtcallback = (XTimerCallbackT *)src->private;
-    XTimerT         * xtimer     = xtcallback->xtimer;
 
     FILE * stream;
     struct timeval tv;
     uint time, newtime;
-    double prob, weight, base = options->base;
+    double prob, weight, base = staticATConfig.base;
 
     gettimeofday ( &tv, NULL );
 
     if ( xtcallback->status == Reset ) {
 
         time = tv.tv_sec * 1000 + tv.tv_usec / 1000
-             - timercb->lastTime.tv_sec * 1000
-             - timercb->lastTime.tv_usec / 1000;
+             - staticATConfig.lastTime.tv_sec * 1000
+             - staticATConfig.lastTime.tv_usec / 1000;
 
-        timercb->class[0] = addValue ( &(groups->groups[0]), &time );
+        staticATConfig.class[0] = addValue ( &(groups->groups[0]), &time );
 
         stream = fopen ( groups->groups[0].seed, "a" );
         fwrite ( &time, sizeof ( uint ), 1, stream );
@@ -91,20 +80,20 @@ void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
         // plot [0:99] (-1.0 * log(100/base) / log(base)) + log(x) / log(base)
 
         prob = -1.0 * log(groups->groups[0].size/base) / log(base)
-             + log(timercb->class[0] + 1.0) / log(base);
+             + log(staticATConfig.class[0] + 1.0) / log(base);
 
-        weight = (timercb->class[1] + 1.0) / (double)(groups->groups[1].size);
+        weight = (staticATConfig.class[1] + 1.0) / (double)(groups->groups[1].size);
 
-        newtime = (double)( getXIdleTime ( xtimer ) ) * weight * prob;
+        newtime = (double)( getXIdleTime() ) * weight * prob;
 
-        if ( newtime >= options->idletime ) {
-            timercb->class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
+        if ( newtime >= staticATConfig.idletime ) {
+            staticATConfig.class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
 
             stream = fopen ( groups->groups[1].seed, "a" );
             fwrite ( &newtime, sizeof ( uint ), 1, stream );
             fclose ( stream );
 
-            setXIdleTime ( xtimer, newtime );
+            setXIdleTime ( newtime );
         }
 
 #ifdef DEBUG_CALLBACK
@@ -131,8 +120,8 @@ void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
 
     DebugInfoT debuginfo[] =
         { { "time: ",     UINT,   &time                }
-        , { "class[0]: ", INT,    &(timercb->class[0]) }
-        , { "class[1]: ", INT,    &(timercb->class[1]) }
+        , { "class[0]: ", INT,    &(staticATConfig.class[0]) }
+        , { "class[1]: ", INT,    &(staticATConfig.class[1]) }
         , { "prob: ",     DOUBLE, &prob                }
         , { "weight: ",   DOUBLE, &weight              }
         , { "newtime: ",  UINT,   &newtime             }
@@ -154,6 +143,6 @@ void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
 
     }
 
-    timercb->lastTime = tv;
+    staticATConfig.lastTime = tv;
 
 }
