@@ -34,10 +34,12 @@ static void signalHandler ( int, siginfo_t *, void * );
 
 int main ( int argc, char ** argv ) {
 
-    TimerCallbackT timercb; memset ( &timercb, 0, sizeof ( TimerCallbackT ) );
-
     Options options;
     getoptions ( &options, argc, argv );
+
+    Display * dpy = XOpenDisplay ("");
+
+    TimerCallbackT timercb; memset ( &timercb, 0, sizeof ( TimerCallbackT ) );
     timercb.options = &options;
 
     const char * seed[2];
@@ -79,7 +81,7 @@ int main ( int argc, char ** argv ) {
     // dbus signal emitter init done
 
     XTimerT xtimer; memset ( &xtimer, 0, sizeof ( XTimerT ) );
-    xtimer.idletime = options.idletime;
+    xtimer.dpy = dpy; xtimer.idletime = options.idletime;
 
     initXTimer ( &xtimer );
 
