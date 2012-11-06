@@ -13,6 +13,6 @@ typedef struct Options
     ;
     } Options;
 
-void getoptions ( Options * options, int argc, char ** argv );
+void getOptions ( Options *, int, char ** );
 
 #endif
