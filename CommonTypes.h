@@ -10,7 +10,6 @@ typedef struct EventSinkConfigT EventSinkConfigT;
 typedef struct WireTableConfigT WireTableConfigT;
 
 typedef int IdentT;
-typedef void * PublicConfig;
 typedef void * PrivateConfig;
 typedef void * (* eventRunner) ( EventSourceT * );
 typedef void * (* eventCallback) ( void );

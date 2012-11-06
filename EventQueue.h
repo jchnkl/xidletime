@@ -6,6 +6,7 @@
 #include "Deque.h"
 #include "HashMap.h"
 #include "CommonTypes.h"
+#include "PublicConfig.h"
 #include "Plugins/PluginConfig.h"
 
 typedef HashMapT WireTableT;
@@ -22,7 +23,7 @@ typedef struct EventQueueT
 typedef struct EventSourceT
     { IdentT id;
     ; EventQueueT * eq
-    ; PublicConfig * public
+    ; PublicConfigT * public
     ; PrivateConfig * private
     ; eventRunner er
     ; eventCallback ec
@@ -31,7 +32,7 @@ typedef struct EventSourceT
 
 typedef struct EventSinkT
     { IdentT id
-    ; PublicConfig * public
+    ; PublicConfigT * public
     ; PrivateConfig * private
     ; void ( * callback ) ( struct EventSinkT *, EventSourceT * )
     ;
@@ -55,7 +56,7 @@ void queueEvent ( EventQueueT *, EventSourceT * );
 SourceSinkTableT * makeSourceSinkTable
     ( SourceSinkTableT   *
     , EventQueueT        *
-    , PublicConfig       *
+    , PublicConfigT      *
     , EventSourceConfigT *
     , EventSinkConfigT   *
     );

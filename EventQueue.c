@@ -35,7 +35,7 @@ void queueEvent ( EventQueueT * eq, EventSourceT * es ) {
 SourceSinkTableT * makeSourceSinkTable
     ( SourceSinkTableT   * sst
     , EventQueueT        * eq
-    , PublicConfig       * public
+    , PublicConfigT      * public
     , EventSourceConfigT * srccfg
     , EventSinkConfigT   * snkcfg
     ) {

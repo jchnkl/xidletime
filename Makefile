@@ -8,13 +8,15 @@ OBJ=eventtest.o \
     EventQueue.o \
     Deque.o \
     HashMap.o \
-    GetOptions.o
+    GetOptions.o \
+    PublicConfig.o
 
 OBJSRC=eventtest.c \
        EventQueue.c \
        Deque.c \
        HashMap.c \
-       GetOptions.c
+       GetOptions.c \
+       PublicConfig.c
 
 PLUGINOBJS=PluginConfig.o \
            KMeansCluster.o \
