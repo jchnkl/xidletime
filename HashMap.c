@@ -94,11 +94,7 @@ ElementT * lookup ( HashMapT * hm, KeyT key ) {
     ElementT * e;
     lockHashMap ( hm );
 
-    if ( hm->size < key ) {
-        e = NULL;
-    } else {
-        e = hm->container[ hm->hashfun ( hm, key ) ].element;
-    }
+    e = hm->container[ hm->hashfun ( hm, key ) ].element;
 
     unlockHashMap ( hm );
 
