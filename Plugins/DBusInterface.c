@@ -13,22 +13,16 @@ static void initDBus ( PublicConfigT * pc ) {
 
     if ( pc->dbusconn != NULL ) return;
 
-    DBusError        err;
-
-    dbus_error_init ( &err ); // initialise the errors
-
     // for thread safe dbus api
     dbus_threads_init_default();
 
     // connect to the bus
-    dbus.connection = dbus_bus_get ( DBUS_BUS_SESSION, &err );
-
-    // request a name on the bus
+    dbus.connection = dbus_bus_get ( DBUS_BUS_SESSION, NULL );
 
     dbus_bus_request_name ( dbus.connection
                           , pc->options->busName
                           , DBUS_NAME_FLAG_REPLACE_EXISTING
-                          , &err
+                          , NULL
                           );
 
     dbus.busName = pc->options->busName;
@@ -36,7 +30,7 @@ static void initDBus ( PublicConfigT * pc ) {
     dbus.interfaceName = pc->options->interfaceName;
 }
 
-static int dbusEmitSignal ( void ) {
+static void dbusEmitSignal ( void ) {
 
     DBusMessage * msg;
     dbus_uint32_t serial = 0; // unique number to associate replies with requests
@@ -47,19 +41,17 @@ static int dbusEmitSignal ( void ) {
                                   , dbus.signalName
                                   );
 
-    if ( msg == NULL ) return -1;
+    if ( msg == NULL ) return;
 
     // send the message and flush the connection
-    if ( ! dbus_connection_send ( dbus.connection
-                                , msg
-                                , &serial
-                                )
-       ) return -1;
+    dbus_connection_send ( dbus.connection
+                         , msg
+                         , &serial
+                         );
 
     dbus_connection_flush ( dbus.connection );
 
     dbus_message_unref ( msg );
-    return 0;
 
 }
 
