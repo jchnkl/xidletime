@@ -72,7 +72,7 @@ void dbusSendSignalSink ( EventSinkT * snk, EventSourceT * src ) {
         snk->private = (void *)&staticDBusConfig;
     }
 
-    if ( src->id == 1 && Reset == ((XTimerCallbackT *)src->private)->status ) {
+    if ( src->id == 1 && Reset == ((XTimerT *)src->private)->status ) {
         staticDBusConfig.signalName = "Reset";
     } else {
         staticDBusConfig.signalName = "Idle";

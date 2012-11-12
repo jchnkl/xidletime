@@ -3,18 +3,21 @@
 #include <stdio.h>
 #include <string.h>
 
-static XTimerT staticXTimer;
-static XTimerCallbackT staticXTCB;
 #include <xcb/screensaver.h>
 
+static XTimerT xtimer;
 
 uint getXIdleTime ( void ) {
-    return staticXTimer.idletime;
+    return xtimer.idletime;
 }
 
 void setXIdleTime ( uint idletime ) {
-    staticXTimer.idletime = idletime;
+    xtimer.idletime = idletime;
     xcb_set_screen_saver ( xtimer.c, idletime / 1000, 0, 0, 0 );
+}
+
+void suspendIdleTimer ( int suspend ) {
+    xtimer.suspend = suspend;
 }
 
 static xcb_screen_t * screen_of_display ( xcb_connection_t * c, int screen ) {
@@ -39,11 +42,10 @@ void * xIdleTimerSource ( EventSourceT * src ) {
     }
 
     if ( src->private == NULL ) {
-        memset ( &staticXTimer, 0, sizeof ( XTimerT ) );
-        memset ( &staticXTCB, 0, sizeof ( XTimerCallbackT ) );
-        staticXTCB.c = src->public->c;
+        memset ( &xtimer, 0, sizeof ( XTimerT ) );
+        xtimer.c = src->public->c;
         setXIdleTime ( src->public->options->idletime );
-        src->private = (void *)&staticXTCB;
+        src->private = (void *)&xtimer;
     }
 
     screen = screen_of_display ( src->public->c, screen_default_nbr );
@@ -69,9 +71,9 @@ void * xIdleTimerSource ( EventSourceT * src ) {
         if ( ((xcb_screensaver_notify_event_t *)event)->code
                 == XCB_SCREENSAVER_STATE_ON
            ) {
-            staticXTCB.status = Idle;
+            xtimer.status = Idle;
         } else {
-            staticXTCB.status = Reset;
+            xtimer.status = Reset;
         }
 
         src->eq->queueEvent ( src->eq, src );
@@ -81,7 +83,7 @@ void * xIdleTimerSource ( EventSourceT * src ) {
 }
 
 void xIdleTimerSink ( EventSinkT * snk, EventSourceT * src ) {
-    if ( staticXTCB.status == Idle ) {
+    if ( xtimer.status == Idle ) {
         fprintf ( stdout, "Idle\n" );
     } else {
         fprintf ( stdout, "Reset\n" );

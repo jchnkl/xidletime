@@ -12,16 +12,11 @@ typedef enum TimerStatusT { Idle=0, Reset } TimerStatusT;
 
 typedef struct XTimerT
     { xcb_connection_t * c
-    ; uint                   idletime      // timeout for idle alarm
+    ; uint               idletime      // timeout for idle alarm
+    ; uint               suspend       // do not emit idle events
+    ; TimerStatusT       status
     ;
     } XTimerT;
-
-typedef struct XTimerCallbackT
-    { TimerStatusT   status
-    ; XTimerT      * xtimer
-    ; void ( * run ) ( struct XTimerCallbackT * )
-    ;
-    } XTimerCallbackT;
 
 uint getXIdleTime ( void );
 

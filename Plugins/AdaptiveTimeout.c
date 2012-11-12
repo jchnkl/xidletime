@@ -55,7 +55,7 @@ void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
 
     GroupsT       * groups     = (GroupsT       *) adaptivetimeout.groups;
 
-    XTimerCallbackT * xtcallback = (XTimerCallbackT *)src->private;
+    XTimerT * xtimer = (XTimerT *)src->private;
 
     FILE * stream;
     struct timeval tv;
@@ -64,7 +64,7 @@ void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
 
     gettimeofday ( &tv, NULL );
 
-    if ( xtcallback->status == Reset ) {
+    if ( xtimer->status == Reset ) {
 
         time = tv.tv_sec * 1000 + tv.tv_usec / 1000
              - adaptivetimeout.lastTime.tv_sec * 1000
