@@ -25,6 +25,7 @@ static void initDBus ( PublicConfigT * pc ) {
                           , NULL
                           );
 
+    pc->dbusconn = dbus.connection;
     dbus.busName = pc->options->busName;
     dbus.objectPath = pc->options->objectPath;
     dbus.interfaceName = pc->options->interfaceName;
