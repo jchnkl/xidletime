@@ -18,4 +18,6 @@ void * dbusReceiveSource ( EventSourceT * );
 
 void dbusEmitSignalSink ( EventSinkT *, EventSourceT * );
 
+void dbusScreenSaverSuspendSink ( EventSinkT *, EventSourceT * );
+
 #endif

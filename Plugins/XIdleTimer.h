@@ -26,4 +26,6 @@ void * xIdleTimerSource ( EventSourceT * );
 
 void xIdleTimerSink ( EventSinkT *, EventSourceT * );
 
+void suspendIdleTimer ( int suspend );
+
 #endif

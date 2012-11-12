@@ -112,3 +112,53 @@ void dbusEmitSignalSink ( EventSinkT * snk, EventSourceT * src ) {
     }
     dbusEmitSignal();
 }
+
+void dbusScreenSaverSuspendSink ( EventSinkT * snk, EventSourceT * src ) {
+
+    if ( snk->private == NULL ) {
+        withPublicConfig ( snk->public, initDBus );
+    }
+
+    dbus_uint32_t serial = 0;
+    dbus_bool_t suspend;
+
+    DBusMessage * reply;
+    DBusMessageIter args;
+
+    DBusMessage * msg;
+
+    if ( src->id == 2 ) {
+        msg = (DBusMessage *)(src->private);
+    } else {
+        return;
+    }
+
+    // read the arguments
+    if ( ! dbus_message_iter_init ( msg, &args ) ) {
+        reply = dbus_message_new_error ( msg
+                                       , DBUS_ERROR_INVALID_ARGS
+                                       , "Argument missing"
+                                       );
+    } else if ( DBUS_TYPE_BOOLEAN != dbus_message_iter_get_arg_type ( &args ) ) {
+        reply = dbus_message_new_error ( msg
+                                       , DBUS_ERROR_INVALID_ARGS
+                                       , "Wrong argument type"
+                                       );
+    } else {
+        dbus_message_iter_get_basic ( &args, &suspend );
+
+        suspendIdleTimer ( suspend );
+
+        // create a reply from the message
+        reply = dbus_message_new_method_return ( msg );
+        dbus_message_iter_init_append(reply, &args);
+    }
+
+    dbus_connection_send ( dbus.connection, reply, &serial );
+
+    dbus_connection_flush ( dbus.connection );
+
+    // free the reply
+    dbus_message_unref(reply);
+    dbus_message_unref(msg);
+}
