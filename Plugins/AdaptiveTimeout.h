@@ -4,7 +4,6 @@
 #include <sys/time.h>
 
 #include "../EventQueue.h"
-#include "../GetOptions.h"
 
 #include "KMeansCluster.h"
 

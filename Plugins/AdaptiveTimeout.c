@@ -10,6 +10,7 @@
 #include <math.h>
 
 #include "XIdleTimer.h"
+#include "../GetOptions.h"
 
 static AdaptiveTimeoutT adaptivetimeout;
 
