@@ -4,6 +4,7 @@
 #include "XIdleTimer.h"
 #include "AdaptiveTimeout.h"
 #include "DBusInterface.h"
+#include "XBacklight.h"
 
 const EventSourceConfigT sourceConfig[] =
     { {  1, NULL, xIdleTimerSource, NULL }

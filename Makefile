@@ -23,14 +23,16 @@ PLUGINOBJS=PluginConfig.o \
            HelloWorld.o \
            XIdleTimer.o \
            AdaptiveTimeout.o \
-           DBusInterface.o
+           DBusInterface.o \
+           XBacklight.o
 
 PLUGINSRCS=Plugins/PluginConfig.c \
            Plugins/KMeansCluster.c \
            Plugins/HelloWorld.c \
            Plugins/XIdleTimer.c \
            Plugins/AdaptiveTimeout.c \
-           Plugins/DBusInterface.c
+           Plugins/DBusInterface.c \
+           Plugins/XBacklight.c
 
 define cc-command
 ${CC} ${CFLAGS} ${LDFLAGS} -c ${CFLAGS} $^
