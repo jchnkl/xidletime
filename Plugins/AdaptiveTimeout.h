@@ -8,7 +8,7 @@
 
 #include "KMeansCluster.h"
 
-typedef struct ATConfigT
+typedef struct AdaptiveTimeoutT
     { GroupsT        * groups
     ; const char     * idlefile
     ; const char     * timeoutfile
@@ -17,7 +17,7 @@ typedef struct ATConfigT
     ; struct timeval   lastTime
     ; int              class[2]
     ;
-    } ATConfigT;
+    } AdaptiveTimeoutT;
 
 void adaptiveTimeoutSink ( EventSinkT *, EventSourceT * );
 

@@ -11,16 +11,16 @@
 
 #include "XIdleTimer.h"
 
-static ATConfigT staticATConfig;
+static AdaptiveTimeoutT adaptivetimeout;
 
 static void initAdaptiveTimeoutSink ( PublicConfigT * pc ) {
-    memset ( &staticATConfig, 0, sizeof ( ATConfigT ) );
+    memset ( &adaptivetimeout, 0, sizeof ( AdaptiveTimeoutT ) );
 
     // getoptions ( &options, argc, argv );
-    staticATConfig.base = pc->options->base;
-    staticATConfig.idletime = pc->options->idletime;
-    staticATConfig.idlefile = pc->options->idlefile;
-    staticATConfig.timeoutfile = pc->options->timeoutfile;
+    adaptivetimeout.base = pc->options->base;
+    adaptivetimeout.idletime = pc->options->idletime;
+    adaptivetimeout.idlefile = pc->options->idlefile;
+    adaptivetimeout.timeoutfile = pc->options->timeoutfile;
 
     const char * seed[2];
     seed[0] = pc->options->idlefile;
@@ -39,37 +39,37 @@ static void initAdaptiveTimeoutSink ( PublicConfigT * pc ) {
     groups->ngroups = 2;
     groups->groups  = group;
     makeGroups ( initMeans, groups, size, comp, seed );
-    staticATConfig.groups = groups;
+    adaptivetimeout.groups = groups;
 
-    staticATConfig.class[0]  = size[0] - 1;
-    staticATConfig.class[1]  = size[1] - 1;
-    gettimeofday ( &(staticATConfig.lastTime), NULL );
+    adaptivetimeout.class[0]  = size[0] - 1;
+    adaptivetimeout.class[1]  = size[1] - 1;
+    gettimeofday ( &(adaptivetimeout.lastTime), NULL );
 }
 
 void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
     if ( snk->private == NULL ) {
         withPublicConfig ( snk->public, initAdaptiveTimeoutSink );
-        snk->private = (void *)&staticATConfig;
+        snk->private = (void *)&adaptivetimeout;
     }
 
-    GroupsT       * groups     = (GroupsT       *) staticATConfig.groups;
+    GroupsT       * groups     = (GroupsT       *) adaptivetimeout.groups;
 
     XTimerCallbackT * xtcallback = (XTimerCallbackT *)src->private;
 
     FILE * stream;
     struct timeval tv;
     uint time, newtime;
-    double prob, weight, base = staticATConfig.base;
+    double prob, weight, base = adaptivetimeout.base;
 
     gettimeofday ( &tv, NULL );
 
     if ( xtcallback->status == Reset ) {
 
         time = tv.tv_sec * 1000 + tv.tv_usec / 1000
-             - staticATConfig.lastTime.tv_sec * 1000
-             - staticATConfig.lastTime.tv_usec / 1000;
+             - adaptivetimeout.lastTime.tv_sec * 1000
+             - adaptivetimeout.lastTime.tv_usec / 1000;
 
-        staticATConfig.class[0] = addValue ( &(groups->groups[0]), &time );
+        adaptivetimeout.class[0] = addValue ( &(groups->groups[0]), &time );
 
         stream = fopen ( groups->groups[0].seed, "a" );
         fwrite ( &time, sizeof ( uint ), 1, stream );
@@ -80,14 +80,14 @@ void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
         // plot [0:99] (-1.0 * log(100/base) / log(base)) + log(x) / log(base)
 
         prob = -1.0 * log(groups->groups[0].size/base) / log(base)
-             + log(staticATConfig.class[0] + 1.0) / log(base);
+             + log(adaptivetimeout.class[0] + 1.0) / log(base);
 
-        weight = (staticATConfig.class[1] + 1.0) / (double)(groups->groups[1].size);
+        weight = (adaptivetimeout.class[1] + 1.0) / (double)(groups->groups[1].size);
 
         newtime = (double)( getXIdleTime() ) * weight * prob;
 
-        if ( newtime >= staticATConfig.idletime ) {
-            staticATConfig.class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
+        if ( newtime >= adaptivetimeout.idletime ) {
+            adaptivetimeout.class[1] = addValue ( &(groups->groups[1]), (uint *) &newtime );
 
             stream = fopen ( groups->groups[1].seed, "a" );
             fwrite ( &newtime, sizeof ( uint ), 1, stream );
@@ -120,8 +120,8 @@ void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
 
     DebugInfoT debuginfo[] =
         { { "time: ",     UINT,   &time                }
-        , { "class[0]: ", INT,    &(staticATConfig.class[0]) }
-        , { "class[1]: ", INT,    &(staticATConfig.class[1]) }
+        , { "class[0]: ", INT,    &(adaptivetimeout.class[0]) }
+        , { "class[1]: ", INT,    &(adaptivetimeout.class[1]) }
         , { "prob: ",     DOUBLE, &prob                }
         , { "weight: ",   DOUBLE, &weight              }
         , { "newtime: ",  UINT,   &newtime             }
@@ -143,6 +143,6 @@ void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
 
     }
 
-    staticATConfig.lastTime = tv;
+    adaptivetimeout.lastTime = tv;
 
 }
