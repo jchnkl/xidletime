@@ -5,14 +5,14 @@
 
 #include "../EventQueue.h"
 
-typedef struct DBusConfig
+typedef struct DBusT
     { const char     * busName
     ; const char     * objectPath
     ; const char     * interfaceName
     ; const char     * signalName
     ; DBusConnection * connection
     ;
-    } DBusConfig;
+    } DBusT;
 
 void dbusSendSignalSink ( EventSinkT *, EventSourceT * );
 

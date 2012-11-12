@@ -7,7 +7,7 @@ extern const char * busName;
 extern const char * objectPath;
 extern const char * interfaceName;
 
-static DBusConfig staticDBusConfig;
+static DBusT dbus;
 
 static void initDBus ( PublicConfigT * pc ) {
 
@@ -21,22 +21,19 @@ static void initDBus ( PublicConfigT * pc ) {
     dbus_threads_init_default();
 
     // connect to the bus
-    staticDBusConfig.connection = dbus_bus_get ( DBUS_BUS_SESSION, &err );
-
+    dbus.connection = dbus_bus_get ( DBUS_BUS_SESSION, &err );
 
     // request a name on the bus
 
-    dbus_bus_request_name ( staticDBusConfig.connection
+    dbus_bus_request_name ( dbus.connection
                           , pc->options->busName
                           , DBUS_NAME_FLAG_REPLACE_EXISTING
                           , &err
                           );
 
-    staticDBusConfig.busName = pc->options->busName;
-    staticDBusConfig.objectPath = pc->options->objectPath;
-    staticDBusConfig.interfaceName = pc->options->interfaceName;
-
-
+    dbus.busName = pc->options->busName;
+    dbus.objectPath = pc->options->objectPath;
+    dbus.interfaceName = pc->options->interfaceName;
 }
 
 static int dbusEmitSignal ( void ) {
@@ -45,21 +42,21 @@ static int dbusEmitSignal ( void ) {
     dbus_uint32_t serial = 0; // unique number to associate replies with requests
 
     // create a signal and check for errors
-    msg = dbus_message_new_signal ( staticDBusConfig.objectPath
-                                  , staticDBusConfig.interfaceName
-                                  , staticDBusConfig.signalName
+    msg = dbus_message_new_signal ( dbus.objectPath
+                                  , dbus.interfaceName
+                                  , dbus.signalName
                                   );
 
     if ( msg == NULL ) return -1;
 
     // send the message and flush the connection
-    if ( ! dbus_connection_send ( staticDBusConfig.connection
+    if ( ! dbus_connection_send ( dbus.connection
                                 , msg
                                 , &serial
                                 )
        ) return -1;
 
-    dbus_connection_flush ( staticDBusConfig.connection );
+    dbus_connection_flush ( dbus.connection );
 
     dbus_message_unref ( msg );
     return 0;
@@ -69,13 +66,13 @@ static int dbusEmitSignal ( void ) {
 void dbusSendSignalSink ( EventSinkT * snk, EventSourceT * src ) {
     if ( snk->private == NULL ) {
         withPublicConfig ( snk->public, initDBus );
-        snk->private = (void *)&staticDBusConfig;
+        snk->private = (void *)&dbus;
     }
 
     if ( src->id == 1 && Reset == ((XTimerT *)src->private)->status ) {
-        staticDBusConfig.signalName = "Reset";
+        dbus.signalName = "Reset";
     } else {
-        staticDBusConfig.signalName = "Idle";
+        dbus.signalName = "Idle";
     }
     dbusEmitSignal();
 }
