@@ -14,6 +14,8 @@ typedef struct DBusT
     ;
     } DBusT;
 
-void dbusSendSignalSink ( EventSinkT *, EventSourceT * );
+void * dbusReceiveSource ( EventSourceT * );
+
+void dbusEmitSignalSink ( EventSinkT *, EventSourceT * );
 
 #endif

@@ -1,11 +1,8 @@
 #include "DBusInterface.h"
 
-// #include "../Config.h"
+#include <sys/select.h>
+
 #include "XIdleTimer.h"
-// #include "SignalEmitter.h"
-extern const char * busName;
-extern const char * objectPath;
-extern const char * interfaceName;
 
 static DBusT dbus;
 
@@ -56,7 +53,53 @@ static void dbusEmitSignal ( void ) {
 
 }
 
-void dbusSendSignalSink ( EventSinkT * snk, EventSourceT * src ) {
+void * dbusReceiveSource ( EventSourceT * src ) {
+    if ( src->private == NULL ) {
+        withPublicConfig ( src->public, initDBus );
+        src->private = (void *)&dbus;
+    }
+
+    int socketfd;
+    fd_set readSet;
+    dbus_connection_get_socket ( src->public->dbusconn, &socketfd );
+    FD_ZERO ( &readSet );
+    FD_SET ( socketfd, &readSet );
+
+    // loop, testing for new messages
+    while ( 1 ) {
+        DBusMessage * msg = NULL;
+
+        select ( socketfd+1, &readSet, NULL, NULL, NULL );
+
+        dbus_connection_read_write_dispatch ( dbus.connection, 0 );
+        msg = dbus_connection_pop_message ( dbus.connection );
+
+        // loop again if we haven't got a message
+        if ( msg == NULL ) continue;
+
+        // check this is a method call for the right interface and method
+        if ( dbus_message_is_method_call ( msg
+                                         , dbus.busName
+                                         , "ScreenSaverSuspend"
+                                         )
+           ) {
+            src->private = (void *) dbus_message_copy ( msg );
+
+            dbus_message_set_serial ( (DBusMessage *)(src->private)
+                                    , dbus_message_get_serial ( msg )
+                                    );
+
+            src->eq->queueEvent ( src->eq, src );
+        }
+
+        // free the message
+        dbus_message_unref(msg);
+    }
+
+    return NULL;
+}
+
+void dbusEmitSignalSink ( EventSinkT * snk, EventSourceT * src ) {
     if ( snk->private == NULL ) {
         withPublicConfig ( snk->public, initDBus );
         snk->private = (void *)&dbus;
