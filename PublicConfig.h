@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include <X11/Xlib.h>
+#include <xcb/xcb.h>
 #include <dbus/dbus.h>
 
 #include "GetOptions.h"
@@ -11,7 +12,7 @@ typedef struct PublicConfigT
     { pthread_mutex_t   publiclock // don't touch this; use withPublicConfig;
     ; unsigned int      dynamic    // makePublicConfig & destroyPublicConfig
     ; Options         * options
-    ; Display         * dpy
+    ; xcb_connection_t * c
     ; DBusConnection  * dbusconn
     ;
     } PublicConfigT;

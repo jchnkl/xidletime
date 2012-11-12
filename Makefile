@@ -1,6 +1,6 @@
 CFLAGS=-g -Wall -lm -pthread
-CFLAGS+=$(shell pkg-config --cflags dbus-1 x11 xscrnsaver)
-LDFLAGS=$(shell pkg-config --libs   dbus-1 x11 xscrnsaver)
+CFLAGS+=$(shell pkg-config --cflags dbus-1 x11-xcb xcb-aux xcb-randr xcb-screensaver)
+LDFLAGS=$(shell pkg-config --libs   dbus-1 x11-xcb xcb-aux xcb-randr xcb-screensaver)
 
 EXE=eventtest
 

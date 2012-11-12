@@ -3,14 +3,15 @@
 
 #include "../EventQueue.h"
 
-#include <X11/X.h>
-#include <X11/Xlib.h>
-#include <X11/extensions/scrnsaver.h>
+#include <xcb/xcb.h>
+#include <xcb/xcb_util.h>
+#include <xcb/xproto.h>
+#include <xcb/screensaver.h>
 
 typedef enum TimerStatusT { Idle=0, Reset } TimerStatusT;
 
 typedef struct XTimerT
-    { Display              * dpy           // ptr to display
+    { xcb_connection_t * c
     ; uint                   idletime      // timeout for idle alarm
     ;
     } XTimerT;
