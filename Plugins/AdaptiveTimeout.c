@@ -53,8 +53,7 @@ void adaptiveTimeoutSink ( EventSinkT * snk, EventSourceT * src ) {
         snk->private = (void *)&adaptivetimeout;
     }
 
-    GroupsT       * groups     = (GroupsT       *) adaptivetimeout.groups;
-
+    GroupsT * groups = (GroupsT *)adaptivetimeout.groups;
     XTimerT * xtimer = (XTimerT *)src->private;
 
     FILE * stream;

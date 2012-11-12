@@ -9,11 +9,11 @@
 #include "GetOptions.h"
 
 typedef struct PublicConfigT
-    { pthread_mutex_t   publiclock // don't touch this; use withPublicConfig;
-    ; unsigned int      dynamic    // makePublicConfig & destroyPublicConfig
-    ; Options         * options
+    { pthread_mutex_t    publiclock // don't touch this; use withPublicConfig;
+    ; unsigned int       dynamic    // makePublicConfig & destroyPublicConfig
+    ; Options          * options
     ; xcb_connection_t * c
-    ; DBusConnection  * dbusconn
+    ; DBusConnection   * dbusconn
     ;
     } PublicConfigT;
 

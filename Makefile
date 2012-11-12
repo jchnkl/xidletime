@@ -39,7 +39,6 @@ endef
 all:
 	${CC} ${CFLAGS} ${LDFLAGS} ${OBJSRC} ${PLUGINSRCS} -o ${EXE} $^
 
-
 %.o: %.c
 	${cc-command}
 
